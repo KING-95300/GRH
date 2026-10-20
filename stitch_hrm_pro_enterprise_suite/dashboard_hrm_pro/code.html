@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"inverse-primary":"#c3c0ff","surface-dim":"#d2d9f4","tertiary-container":"#006e4b","surface-container-high":"#e2e7ff","on-tertiary-fixed-variant":"#005236","background":"#faf8ff","surface-container":"#eaedff","secondary-container":"#d0e1fb","on-primary-fixed-variant":"#3323cc","on-tertiary":"#ffffff","tertiary":"#005338","on-tertiary-container":"#67f4b7","on-surface-variant":"#464555","primary-fixed":"#e2dfff","inverse-surface":"#283044","surface-bright":"#faf8ff","primary-fixed-dim":"#c3c0ff","tertiary-fixed":"#6ffbbe","surface-container-lowest":"#ffffff","primary":"#3525cd","tertiary-fixed-dim":"#4edea3","on-secondary-container":"#54647a","on-secondary":"#ffffff","surface-container-highest":"#dae2fd","outline-variant":"#c7c4d8","secondary-fixed-dim":"#b7c8e1","error":"#ba1a1a","on-secondary-fixed":"#0b1c30","inverse-on-surface":"#eef0ff","on-primary-fixed":"#0f0069","outline":"#777587","surface":"#faf8ff","secondary-fixed":"#d3e4fe","on-tertiary-fixed":"#002113","on-surface":"#131b2e","on-primary-container":"#dad7ff","on-error":"#ffffff","on-error-container":"#93000a","secondary":"#505f76","surface-tint":"#4d44e3","primary-container":"#4f46e5","error-container":"#ffdad6","on-secondary-fixed-variant":"#38485d","on-primary":"#ffffff","on-background":"#131b2e","surface-variant":"#dae2fd","surface-container-low":"#f2f3ff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-md":"0.75rem","space-xl":"1.5rem","gutter":"1.25rem","margin":"2rem","space-lg":"1rem","space-xs":"0.25rem","space-sm":"0.5rem","margin-mobile":"1rem","gutter-mobile":"0.75rem"},"fontFamily":{"label-md":["Inter"],"display-lg-mobile":["Inter"],"headline-lg":["Inter"],"numeric-md":["Inter"],"display-lg":["Inter"],"body-md":["Inter"],"body-lg":["Inter"],"body-sm":["Inter"],"headline-md":["Inter"],"label-lg":["Inter"],"label-sm":["Inter"],"headline-sm":["Inter"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}],"display-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"600"}],"numeric-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],"display-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.025em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","fontWeight":"500"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-sm":["16px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-space-lg flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="HRM Pro Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V6VRIY9Pcf-DlhjcsOJFuyKGJpnk6zyT9EVDH9l5PBeVInzb5KCRa8h-Eqro-UDfRg2hn3DWQzI55TVRcwFZrki6DutMAiueINPdHfsWWBN9cwTgFqAmRM4KY57YZZ5PmnNwmmgHUpE2ysCc7km-aE7PYB2iIHgsiezNZhMh7jt8xP9C5WeTMTyPg6W4fiADdea3LnLhHcPIu285R4X7zyZf9OC35doExyEGqtr156YOWzA5PMdxtVNw"/><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate">HRM Pro</span><span class="font-label-sm text-label-sm text-on-surface-variant truncate">Tunisie HCM Suite</span></div></div><button aria-label="Collapse sidebar" class="text-on-surface-variant hover:text-on-surface p-space-xs rounded-xl hover:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-body-lg">keyboard_double_arrow_left</span></button></div><div class="px-space-md py-space-xs"><div class="flex items-center justify-between p-space-sm bg-surface-container-low rounded-xl"><div class="flex items-center gap-space-sm min-w-0"><span class="w-2 h-2 rounded-full bg-tertiary shrink-0"></span><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Carthage Tech Solutions</span><span class="font-label-sm text-label-sm text-on-surface-variant truncate">SARL • Tunis</span></div></div><span class="material-symbols-outlined text-body-md text-on-surface-variant">unfold_more</span></div></div><div class="flex-1 overflow-y-auto px-space-md py-space-sm"><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl transition-colors bg-primary-container text-on-primary font-semibold" data-path="dashboard" href="#"><span class="material-symbols-outlined text-body-lg">grid_view</span><span>Dashboard</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="employees" href="#"><span class="material-symbols-outlined text-body-lg">badge</span><span>Employees</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="leaves" href="#"><span class="material-symbols-outlined text-body-lg">event_available</span><span>Leaves</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="attendance" href="#"><span class="material-symbols-outlined text-body-lg">schedule</span><span>Attendance</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="departments" href="#"><span class="material-symbols-outlined text-body-lg">account_tree</span><span>Departments</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="payroll" href="#"><span class="material-symbols-outlined text-body-lg">payments</span><span>Payroll</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="recruitment" href="#"><span class="material-symbols-outlined text-body-lg">work</span><span>Recruitment</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="documents" href="#"><span class="material-symbols-outlined text-body-lg">description</span><span>Documents</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports" href="#"><span class="material-symbols-outlined text-body-lg">analytics</span><span>Reports</span></a><a class="flex items-center gap-space-md px-space-md py-2.5 rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-body-lg">settings</span><span>Settings</span></a></nav></div><div class="p-space-md bg-surface-container-low m-space-md rounded-xl"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-body-lg">verified_user</span><div class="flex flex-col min-w-0"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Code du Travail TN</span><span class="font-label-sm text-label-sm text-on-surface-variant">CNSS &amp; IRPP Conforme</span></div></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl z-40 flex items-center justify-between px-gutter shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-lg flex-1 max-w-lg"><div class="relative w-full"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-lg pointer-events-none">search</span><input class="w-full h-10 pl-10 pr-12 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" placeholder="Search employees, CNSS, CIN, files..." type="text"/><span class="absolute right-3 top-1/2 -translate-y-1/2 font-label-sm text-label-sm text-on-surface-variant bg-surface-container-lowest px-1.5 py-0.5 rounded shadow-[0_1px_2px_rgba(0,0,0,0.05)]">⌘K</span></div></div><div class="flex items-center gap-space-md"><button class="h-10 px-space-lg rounded-xl bg-primary-container hover:bg-primary font-label-lg text-label-lg text-on-primary flex items-center gap-space-xs transition-colors" type="button"><span class="material-symbols-outlined text-body-md">add</span><span>New Request</span></button><button aria-label="Notifications" class="relative w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-body-lg">notifications</span><span class="absolute top-2 right-2 w-4 h-4 bg-error text-on-error font-label-sm text-label-sm rounded-full flex items-center justify-center font-bold">3</span></button><div class="relative group"><button class="flex items-center gap-space-sm pl-space-xs pr-space-sm py-1 rounded-xl hover:bg-surface-container-low transition-colors" type="button"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn1x71m2-v5KJtulMUNiukGTzSl5qd54fj5ooPBmqgrYi0D0CssWJkakHiMrcrCpyeknR4l0Lc-82m0w2U-mPTqdAEKQGc4KtDPGeZ1O4aBkSgnrvQfZn0gs_YSbcfZR1ShLaXtA3X9nzVeePKlnfVlQjYWk6Y15qKCRS_Ek79NNuKAbLLGQhQFws3A9bLeT2ZDms_2bm3wl_z932_RkB14gNx_NcWOLEASJpcz89TrilxBxLOY0oT"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold">Amel Ben Salah</span><span class="font-label-sm text-label-sm text-on-surface-variant">HR Director</span></div><span class="material-symbols-outlined text-on-surface-variant text-body-md">expand_more</span></button><div class="absolute right-0 top-full mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-[0_4px_6px_-1px_rgba(15,23,42,0.07),0_2px_4px_-2px_rgba(15,23,42,0.05)] py-space-xs opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all"><div class="px-space-md py-space-xs border-b border-surface-container"><p class="font-label-md text-label-md text-on-surface font-semibold">Amel Ben Salah</p><p class="font-label-sm text-label-sm text-on-surface-variant truncate">amel.bensalah@carthagetech.tn</p></div><a class="flex items-center gap-space-sm px-space-md py-2 font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-body-md">person</span><span>My Profile</span></a><a class="flex items-center gap-space-sm px-space-md py-2 font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-body-md">corporate_fare</span><span>Company Settings</span></a><div class="my-space-xs border-t border-surface-container"></div><a class="flex items-center gap-space-sm px-space-md py-2 font-body-sm text-body-sm text-error hover:bg-error-container hover:text-on-error-container transition-colors" data-path="login" href="#"><span class="material-symbols-outlined text-body-md">logout</span><span>Log out</span></a></div></div></div></header><main class="relative pt-16 min-h-screen bg-background w-full px-gutter"><div class="flex flex-col w-full pb-margin">
+<div class="relative py-space-lg flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
+<span>Accueil</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-semibold">Tableau de bord</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight">Tableau de bord RH <span class="font-headline-md text-headline-md font-normal text-on-surface-variant">/ Executive Dashboard</span></h1>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-xl bg-surface-container-lowest shadow-sm text-on-surface">
+<span class="material-symbols-outlined text-body-md text-primary">calendar_month</span>
+<span class="font-label-lg text-label-lg font-semibold">Ce mois-ci (Mars 2025)</span>
+<span class="material-symbols-outlined text-body-sm text-on-surface-variant cursor-pointer">arrow_drop_down</span>
+</div>
+<button class="h-10 px-space-lg rounded-xl bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg flex items-center gap-space-xs shadow-md transition-all active:scale-95" type="button">
+<span class="material-symbols-outlined text-body-md">add_circle</span>
+<span>Nouvelle action rapide</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md mb-space-xl">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Total Collaborateurs</span>
+<div class="w-9 h-9 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-body-lg">group</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-display-lg text-display-lg text-on-surface font-bold tracking-tight">48</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+          +3 ce trimestre
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">100% contrats conformes Code du Travail</p>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">En Congé Aujourd'hui</span>
+<div class="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-body-lg">event_busy</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-display-lg text-display-lg text-on-surface font-bold tracking-tight">5</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+          10.4% effectif
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">2 retours prévus demain</p>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Demandes en Attente</span>
+<div class="w-9 h-9 rounded-xl bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-body-lg">pending_actions</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-display-lg text-display-lg text-on-surface font-bold tracking-tight">7</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-xs">priority_high</span>
+          4 urgentes
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Délai moyen de réponse: 4.8h</p>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-xl shadow-sm transition-transform hover:-translate-y-0.5">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Nouvelles Recrues</span>
+<div class="w-9 h-9 rounded-xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed-variant">
+<span class="material-symbols-outlined text-body-lg">person_add</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-display-lg text-display-lg text-on-surface font-bold tracking-tight">3</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">
+          Mars 2025
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Intégration onboarding en cours</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg mb-space-xl">
+<div class="lg:col-span-7 xl:col-span-8 rounded-xl bg-surface-container-lowest p-space-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Évolution des Congés par Mois <span class="text-on-surface-variant font-normal">/ Leaves Breakdown</span></h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Historique cumulé sur les 6 derniers mois d'activité</p>
+</div>
+<div class="flex flex-wrap items-center gap-space-md font-label-sm text-label-sm">
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-primary-container"></span>Annuel / Payé</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-secondary-container"></span>Maladie</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-surface-container-highest"></span>Sans Solde</span>
+</div>
+</div>
+<div class="relative w-full h-64 pt-space-md">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 540 200">
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3 3" x1="0" x2="540" y1="30" y2="30"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3 3" x1="0" x2="540" y1="80" y2="80"></line>
+<line class="text-surface-container" stroke="currentColor" stroke-dasharray="3 3" x1="0" x2="540" y1="130" y2="130"></line>
+<line class="text-surface-variant" stroke="currentColor" stroke-width="1" x1="0" x2="540" y1="180" y2="180"></line>
+<g class="group cursor-pointer" transform="translate(35, 0)">
+<rect class="fill-primary-container" height="110" rx="4" width="28" x="0" y="70"></rect>
+<rect class="fill-secondary-container" height="22" rx="4" width="28" x="0" y="45"></rect>
+<rect class="fill-surface-container-highest" height="12" rx="4" width="28" x="0" y="30"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="14" y="196">Oct</text>
+</g>
+<g class="group cursor-pointer" transform="translate(125, 0)">
+<rect class="fill-primary-container" height="85" rx="4" width="28" x="0" y="95"></rect>
+<rect class="fill-secondary-container" height="12" rx="4" width="28" x="0" y="80"></rect>
+<rect class="fill-surface-container-highest" height="12" rx="4" width="28" x="0" y="65"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="14" y="196">Nov</text>
+</g>
+<g class="group cursor-pointer" transform="translate(215, 0)">
+<rect class="fill-primary-container" height="140" rx="4" width="28" x="0" y="40"></rect>
+<rect class="fill-secondary-container" height="12" rx="4" width="28" x="0" y="25"></rect>
+<rect class="fill-surface-container-highest" height="8" rx="4" width="28" x="0" y="15"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="14" y="196">Déc</text>
+</g>
+<g class="group cursor-pointer" transform="translate(305, 0)">
+<rect class="fill-primary-container" height="80" rx="4" width="28" x="0" y="100"></rect>
+<rect class="fill-secondary-container" height="26" rx="4" width="28" x="0" y="70"></rect>
+<rect class="fill-surface-container-highest" height="8" rx="4" width="28" x="0" y="60"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="14" y="196">Jan</text>
+</g>
+<g class="group cursor-pointer" transform="translate(395, 0)">
+<rect class="fill-primary-container" height="65" rx="4" width="28" x="0" y="115"></rect>
+<rect class="fill-secondary-container" height="22" rx="4" width="28" x="0" y="90"></rect>
+<rect class="fill-surface-container-highest" height="6" rx="4" width="28" x="0" y="82"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="14" y="196">Fév</text>
+</g>
+<g class="group cursor-pointer" transform="translate(485, 0)">
+<rect class="fill-primary-container" height="105" rx="4" width="28" x="0" y="75"></rect>
+<rect class="fill-secondary-container" height="18" rx="4" width="28" x="0" y="55"></rect>
+<rect class="fill-surface-container-highest" height="8" rx="4" width="28" x="0" y="45"></rect>
+<text class="fill-primary font-bold text-[11px] font-sans" text-anchor="middle" x="14" y="196">Mar</text>
+</g>
+</svg>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>Volume le plus haut : Décembre (160j cumulés)</span>
+<span class="text-primary font-semibold hover:underline cursor-pointer">Exporter le rapport légal TN →</span>
+</div>
+</div>
+<div class="lg:col-span-5 xl:col-span-4 rounded-xl bg-surface-container-lowest p-space-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Par Département</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-lg">48 actifs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-lg">Répartition de l'effectif actuel</p>
+<div class="flex items-center justify-center my-space-md">
+<div class="relative w-44 h-44 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<circle class="text-surface-container-low" cx="50" cy="50" fill="none" r="38" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary-container" cx="50" cy="50" fill="none" r="38" stroke="currentColor" stroke-dasharray="238.76" stroke-dashoffset="149.2" stroke-width="12"></circle>
+<circle class="text-secondary" cx="50" cy="50" fill="none" r="38" stroke="currentColor" stroke-dasharray="238.76" stroke-dashoffset="179.0" stroke-linecap="round" stroke-width="12" style="transform: rotate(135deg); transform-origin: center;"></circle>
+<circle class="text-tertiary" cx="50" cy="50" fill="none" r="38" stroke="currentColor" stroke-dasharray="238.76" stroke-dashoffset="188.6" stroke-linecap="round" stroke-width="12" style="transform: rotate(225deg); transform-origin: center;"></circle>
+<circle class="text-outline-variant" cx="50" cy="50" fill="none" r="38" stroke="currentColor" stroke-dasharray="238.76" stroke-dashoffset="198.1" stroke-linecap="round" stroke-width="12" style="transform: rotate(300deg); transform-origin: center;"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">48</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Salariés</span>
+</div>
+</div>
+</div>
+<div class="space-y-2.5 mt-space-md">
+<div class="flex items-center justify-between text-on-surface font-body-sm text-body-sm">
+<span class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span>IT / R&amp;D</span>
+</span>
+<span class="font-semibold">18 <span class="text-on-surface-variant font-normal">(37.5%)</span></span>
+</div>
+<div class="flex items-center justify-between text-on-surface font-body-sm text-body-sm">
+<span class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span>Commercial &amp; Marketing</span>
+</span>
+<span class="font-semibold">12 <span class="text-on-surface-variant font-normal">(25.0%)</span></span>
+</div>
+<div class="flex items-center justify-between text-on-surface font-body-sm text-body-sm">
+<span class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span>Opérations &amp; Support</span>
+</span>
+<span class="font-semibold">10 <span class="text-on-surface-variant font-normal">(20.8%)</span></span>
+</div>
+<div class="flex items-center justify-between text-on-surface font-body-sm text-body-sm">
+<span class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>
+<span>Finance &amp; RH</span>
+</span>
+<span class="font-semibold">8 <span class="text-on-surface-variant font-normal">(16.7%)</span></span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs text-center">
+<a class="font-label-md text-label-md text-primary font-semibold hover:underline" href="#">Voir l'organigramme complet</a>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<div class="lg:col-span-8 rounded-xl bg-surface-container-lowest p-space-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-lg">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Demandes de Congé en Attente</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Validation hiérarchique sous conformité convention collective</p>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">
+            7 demandes à traiter
+          </span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider h-10">
+<th class="px-space-md rounded-l-lg font-semibold">Collaborateur</th>
+<th class="px-space-md font-semibold">Type de Congé</th>
+<th class="px-space-md font-semibold">Période</th>
+<th class="px-space-md font-semibold">Solde</th>
+<th class="px-space-md text-right rounded-r-lg font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 space-y-1">
+<tr class="h-16 hover:bg-surface-container-low/60 transition-colors">
+<td class="px-space-md">
+<div class="flex items-center gap-space-sm">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="Portrait photo of Mohamed Ben Salem, a Tunisian male software developer in his early thirties with glasses and modern casual work attire against a clean neutral corporate studio backdrop, highly detailed professional headshot with soft studio light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDceXGT4qNcbLdHbBjxHnVrTw2241DOTGz_OuCPGAfOUGdk11p4AWinWl2zcsNU7wD9YmM1GOUTDJ6n5vKSQvMV_CWhkSUJVb_YNxRrHlfvWQUi9ZNSBfDjkioiFgccbhj-ZPbR-F4HSOp4ojxnc8xdsrLAlGCkJhOKDBsdadXQFVaCOTKGB-Hrhus3Aj7G-k9pZWreFlVQW39CEDb8SyGKeUyVUMPqDYqMyoDR8FeesCkW7qApqXP4"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mohamed Ben Salem</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Senior Dev • IT</span>
+</div>
+</div>
+</td>
+<td class="px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm">
+                    Congé Annuel
+                  </span>
+</td>
+<td class="px-space-md">
+<div class="flex flex-col">
+<span class="font-numeric-md text-numeric-md font-medium text-on-surface">18 Mar - 22 Mar</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">5 jours ouvrables</span>
+</div>
+</td>
+<td class="px-space-md">
+<span class="font-numeric-md text-numeric-md text-tertiary font-bold">16j restants</span>
+</td>
+<td class="px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1 rounded-lg bg-tertiary text-on-tertiary hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all shadow-sm" type="button">
+                      Approuver
+                    </button>
+<button class="px-3 py-1 rounded-lg bg-error-container text-on-error-container hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all" type="button">
+                      Refuser
+                    </button>
+</div>
+</td>
+</tr>
+<tr class="h-16 hover:bg-surface-container-low/60 transition-colors">
+<td class="px-space-md">
+<div class="flex items-center gap-space-sm">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="Close up portrait photograph of Yasmine Trabelsi, a North African female product designer with warm expressive eyes, tied hair, elegant dark blazer, soft focused office background, high resolution corporate profile shot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfGq_cYH_1XVXY02_LAy1WlKwIz5TY7jGF4WMqdF6rplrNW1xkqBRlFXwiLy51nbRV_Wqceok2KHDVgYqSc6YMSgp6KSjlz6kCkNM38Pz8ZbkKu1Q4SsXXOS5hJYtPxSB8heAwbeRiDmZjA6yYemjzFuLhhSlNXJibjfPCydp9zGRPWLkrV8hx3fAxw-BPOIWwwq6Y-OAcK4g0KvcUCheUsuYg8N7EoSrYnNIAXd6klKNRQWqG1_tD"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Yasmine Trabelsi</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Product Designer • Produit</span>
+</div>
+</div>
+</td>
+<td class="px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                    Maternité / Maladie
+                  </span>
+</td>
+<td class="px-space-md">
+<div class="flex flex-col">
+<span class="font-numeric-md text-numeric-md font-medium text-on-surface">14 Mar - 16 Mar</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">2 jours ouvrables</span>
+</div>
+</td>
+<td class="px-space-md">
+<span class="font-numeric-md text-numeric-md text-tertiary font-bold">21j restants</span>
+</td>
+<td class="px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1 rounded-lg bg-tertiary text-on-tertiary hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all shadow-sm" type="button">
+                      Approuver
+                    </button>
+<button class="px-3 py-1 rounded-lg bg-error-container text-on-error-container hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all" type="button">
+                      Refuser
+                    </button>
+</div>
+</td>
+</tr>
+<tr class="h-16 hover:bg-surface-container-low/60 transition-colors">
+<td class="px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center font-bold text-on-secondary-container text-xs">
+                      KC
+                    </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Karim Chaabane</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Account Exec • Commercial</span>
+</div>
+</div>
+</td>
+<td class="px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">
+                    Sans Solde
+                  </span>
+</td>
+<td class="px-space-md">
+<div class="flex flex-col">
+<span class="font-numeric-md text-numeric-md font-medium text-on-surface">25 Mar</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1 jour</span>
+</div>
+</td>
+<td class="px-space-md">
+<span class="font-numeric-md text-numeric-md text-on-surface-variant">Non imputé</span>
+</td>
+<td class="px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1 rounded-lg bg-tertiary text-on-tertiary hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all shadow-sm" type="button">
+                      Approuver
+                    </button>
+<button class="px-3 py-1 rounded-lg bg-error-container text-on-error-container hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all" type="button">
+                      Refuser
+                    </button>
+</div>
+</td>
+</tr>
+<tr class="h-16 hover:bg-surface-container-low/60 transition-colors">
+<td class="px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center font-bold text-primary text-xs">
+                      NK
+                    </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Nour El Houda Karray</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Comptable • Finance</span>
+</div>
+</div>
+</td>
+<td class="px-space-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm">
+                    Congé Annuel
+                  </span>
+</td>
+<td class="px-space-md">
+<div class="flex flex-col">
+<span class="font-numeric-md text-numeric-md font-medium text-on-surface">28 Mar - 02 Avr</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 jours ouvrables</span>
+</div>
+</td>
+<td class="px-space-md">
+<span class="font-numeric-md text-numeric-md text-tertiary font-bold">11.5j restants</span>
+</td>
+<td class="px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-3 py-1 rounded-lg bg-tertiary text-on-tertiary hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all shadow-sm" type="button">
+                      Approuver
+                    </button>
+<button class="px-3 py-1 rounded-lg bg-error-container text-on-error-container hover:opacity-90 font-label-sm text-label-sm font-semibold transition-all" type="button">
+                      Refuser
+                    </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="pt-space-md mt-space-sm flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Affichage de 4 sur 7 demandes</span>
+<a class="font-label-lg text-label-lg text-primary font-semibold hover:underline flex items-center gap-1" href="#">
+<span>Voir toutes les 7 demandes</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<div class="rounded-xl bg-surface-container-lowest p-space-xl shadow-sm">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-body-lg">flight_takeoff</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Absents cette semaine</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Semaine 12</span>
+</div>
+<div class="space-y-space-md">
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold text-xs flex items-center justify-center">
+                AD
+              </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Amine Dridi</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Congé annuel</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-primary-container text-on-primary">L</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-primary-container text-on-primary">M</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-primary-container text-on-primary">M</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">J</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">V</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold text-xs flex items-center justify-center">
+                SM
+              </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Sonia Mezghani</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Télétravail autorisé</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">L</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">M</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">M</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-tertiary-container text-on-tertiary">J</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-tertiary-container text-on-tertiary">V</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface font-semibold text-xs flex items-center justify-center">
+                TC
+              </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Tarek Cherif</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mission externe Sfax</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">L</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-primary-container text-on-primary">M</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-primary-container text-on-primary">M</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">J</span>
+<span class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-surface-container text-on-surface-variant">V</span>
+</div>
+</div>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container-lowest p-space-xl shadow-sm">
+<div class="flex items-center justify-between mb-space-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Activité Récente</h3>
+<span class="material-symbols-outlined text-body-md text-on-surface-variant">history</span>
+</div>
+<div class="relative pl-6 space-y-space-lg">
+<div class="absolute left-2.5 top-2 bottom-2 w-0.5 bg-surface-container"></div>
+<div class="relative">
+<div class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-tertiary"></div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Contrat CDI signé pour Sonia Mezghani</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Document archivé au registre du personnel</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Il y a 2h • RH Ops</span>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-primary-container"></div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Déclaration CNSS T1-2025 validée</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Télétransmission portail CNSS Tunisie confirmée</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Il y a 5h • Amel Ben Salah</span>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -left-6 top-1 w-3 h-3 rounded-full bg-surface-variant"></div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Fiche de paie Février consultée</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">44 salariés sur 48 ont téléchargé leur fiche</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Hier à 17:30 • Portail Employé</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  document.querySelectorAll('button').forEach(btn => {
+    if (btn.innerText.includes('Approuver')) {
+      btn.addEventListener('click', function() {
+        const row = this.closest('tr');
+        if (row) {
+          this.innerText = 'Approuvé ✓';
+          this.classList.remove('bg-tertiary');
+          this.classList.add('bg-tertiary-fixed', 'text-on-tertiary-fixed');
+          const refuseBtn = row.querySelector('button:last-child');
+          if (refuseBtn) refuseBtn.remove();
+        }
+      });
+    } else if (btn.innerText.includes('Refuser')) {
+      btn.addEventListener('click', function() {
+        const row = this.closest('tr');
+        if (row) {
+          row.style.opacity = '0.5';
+          this.innerText = 'Refusé';
+          const approveBtn = row.querySelector('button:first-child');
+          if (approveBtn) approveBtn.remove();
+        }
+      });
+    }
+  });
+</script></main></div></body></html>
