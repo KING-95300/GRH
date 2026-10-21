@@ -263,7 +263,7 @@ $statusPills = [
     class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center"
     type="button"
     title="Modifier les métadonnées"
-    data-json='@js(['id' => $doc->id, 'name' => $doc->name, 'employee_id' => $doc->employee_id, 'category' => $doc->category, 'status' => $doc->status, 'expires_at' => $doc->expires_at?->format('Y-m-d'), 'notes' => $doc->notes])'
+    data-json="{{ json_encode(['id' => $doc->id, 'name' => $doc->name, 'employee_id' => $doc->employee_id, 'category' => $doc->category, 'status' => $doc->status, 'expires_at' => $doc->expires_at?->format('Y-m-d'), 'notes' => $doc->notes]) }}"
     onclick="openEditModal(this)"
 >
 <span class="material-symbols-outlined text-body-md">edit</span>
@@ -348,7 +348,7 @@ $statusPills = [
 <span class="material-symbols-outlined text-body-md">download</span>
 </a>
 <button class="w-8 h-8 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button" title="Modifier"
-    data-json='@js(['id' => $doc->id, 'name' => $doc->name, 'employee_id' => $doc->employee_id, 'category' => $doc->category, 'status' => $doc->status, 'expires_at' => $doc->expires_at?->format('Y-m-d'), 'notes' => $doc->notes])'
+    data-json="{{ json_encode(['id' => $doc->id, 'name' => $doc->name, 'employee_id' => $doc->employee_id, 'category' => $doc->category, 'status' => $doc->status, 'expires_at' => $doc->expires_at?->format('Y-m-d'), 'notes' => $doc->notes]) }}"
     onclick="openEditModal(this)">
 <span class="material-symbols-outlined text-body-md">edit</span>
 </button>
@@ -559,7 +559,7 @@ $statusPills = [
       var field = form.querySelector('[name="' + key + '"]');
       if (field) field.value = data[key] === null ? '' : data[key];
     });
-    form.action = '{{ route('admin.documents.update', '__ID__') }}'.replace('__ID__', data.id);
+    form.action = "{{ route('admin.documents.update', '__ID__') }}".replace('__ID__', data.id);
     openModal('edit-modal');
   }
 

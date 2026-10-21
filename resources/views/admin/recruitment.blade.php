@@ -293,7 +293,7 @@
             class="p-1.5 hover:text-primary transition-colors text-on-surface-variant"
             type="button"
             title="Modifier l'offre"
-            data-json='@js($offer->only(['id', 'title', 'department', 'contract_type', 'status', 'location', 'salary_min', 'salary_max', 'description']))'
+            data-json="{{ json_encode($offer->only(['id', 'title', 'department', 'contract_type', 'status', 'location', 'salary_min', 'salary_max', 'description'])) }}"
             onclick="openOfferModal(this)"
         >
             <span class="material-symbols-outlined text-body-md">edit</span>
@@ -547,7 +547,7 @@ function fillForm(form, data) {
 function openCandidateModal(button, presetStage) {
     var form = document.getElementById('candidate-form');
     form.reset();
-    form.action = '{{ route('admin.recruitment.candidates.store') }}';
+    form.action = "{{ route('admin.recruitment.candidates.store') }}";
     document.getElementById('candidate-method').value = '';
     document.getElementById('candidate-modal-title').textContent = 'Nouveau Candidat';
     if (presetStage) {
@@ -557,7 +557,7 @@ function openCandidateModal(button, presetStage) {
         var data = JSON.parse(button.dataset.json);
         document.getElementById('candidate-modal-title').textContent = 'Modifier ' + data.name;
         fillForm(form, data);
-        form.action = '{{ route('admin.recruitment.candidates.update', '__ID__') }}'.replace('__ID__', data.id);
+        form.action = "{{ route('admin.recruitment.candidates.update', '__ID__') }}".replace('__ID__', data.id);
         document.getElementById('candidate-method').value = 'PUT';
     }
     openModal('candidate-modal');
@@ -566,14 +566,14 @@ function openCandidateModal(button, presetStage) {
 function openOfferModal(button) {
     var form = document.getElementById('offer-form');
     form.reset();
-    form.action = '{{ route('admin.recruitment.offers.store') }}';
+    form.action = "{{ route('admin.recruitment.offers.store') }}";
     document.getElementById('offer-method').value = '';
     document.getElementById('offer-modal-title').textContent = 'Nouvelle Offre';
     if (button && button.dataset.json) {
         var data = JSON.parse(button.dataset.json);
         document.getElementById('offer-modal-title').textContent = 'Modifier ' + data.title;
         fillForm(form, data);
-        form.action = '{{ route('admin.recruitment.offers.update', '__ID__') }}'.replace('__ID__', data.id);
+        form.action = "{{ route('admin.recruitment.offers.update', '__ID__') }}".replace('__ID__', data.id);
         document.getElementById('offer-method').value = 'PUT';
     }
     openModal('offer-modal');
@@ -582,7 +582,7 @@ function openOfferModal(button) {
 function openInterviewModal(button) {
     var form = document.getElementById('interview-form');
     form.reset();
-    form.action = '{{ route('admin.recruitment.candidates.interviews.store', '__ID__') }}'.replace('__ID__', button.dataset.candidateId);
+    form.action = "{{ route('admin.recruitment.candidates.interviews.store', '__ID__') }}".replace('__ID__', button.dataset.candidateId);
     document.getElementById('interview-candidate-name').textContent = button.dataset.candidateName;
     openModal('interview-modal');
 }
@@ -617,7 +617,7 @@ document.querySelectorAll('[data-dropzone]').forEach(function (zone) {
         var id = e.dataTransfer.getData('text/plain') || draggedId;
         var stage = zone.getAttribute('data-stage');
         if (!id || !stage) return;
-        fetch('{{ route('admin.recruitment.candidates.stage', '__ID__') }}'.replace('__ID__', id), {
+        fetch("{{ route('admin.recruitment.candidates.stage', '__ID__') }}".replace('__ID__', id), {
             method: 'PATCH',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

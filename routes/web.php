@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\EmployeeController as AdminEmployeeController;
 use App\Http\Controllers\Admin\LeaveController as AdminLeaveController;
+use App\Http\Controllers\Admin\AttendanceController as AdminAttendanceController;
+use App\Http\Controllers\Admin\DepartmentController as AdminDepartmentController;
+use App\Http\Controllers\Admin\PayrollController as AdminPayrollController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -63,9 +66,25 @@ Route::middleware(['token.auth', 'verified', 'admin'])->prefix('admin')->name('a
     Route::get('/leaves/{leave}/attachment', [AdminLeaveController::class, 'downloadAttachment'])->name('leaves.attachment');
     Route::patch('/leaves/{leave}/approve', [AdminLeaveController::class, 'approve'])->name('leaves.approve');
     Route::patch('/leaves/{leave}/reject', [AdminLeaveController::class, 'reject'])->name('leaves.reject');
-    Route::view('/attendance', 'admin.attendance')->name('attendance');
-    Route::view('/departments', 'admin.departments')->name('departments');
-    Route::view('/payroll', 'admin.payroll')->name('payroll');
+    Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('attendance');
+    Route::post('/attendance/punch', [AdminAttendanceController::class, 'punch'])->name('attendance.punch');
+    Route::get('/attendance/export', [AdminAttendanceController::class, 'export'])->name('attendance.export');
+    Route::post('/attendance/anomalies/resolve-all', [AdminAttendanceController::class, 'resolveAll'])->name('attendance.anomalies.resolveAll');
+    Route::post('/attendance/anomalies/{record}/resolve', [AdminAttendanceController::class, 'resolveAnomaly'])->name('attendance.anomalies.resolve');
+    Route::post('/attendance/anomalies/{record}/justify', [AdminAttendanceController::class, 'justifyAnomaly'])->name('attendance.anomalies.justify');
+    Route::post('/attendance/anomalies/{record}/ignore', [AdminAttendanceController::class, 'ignoreAnomaly'])->name('attendance.anomalies.ignore');
+
+    Route::get('/departments', [AdminDepartmentController::class, 'index'])->name('departments');
+    Route::post('/departments', [AdminDepartmentController::class, 'store'])->name('departments.store');
+    Route::get('/departments/export', [AdminDepartmentController::class, 'export'])->name('departments.export');
+    Route::put('/departments/{department}', [AdminDepartmentController::class, 'update'])->name('departments.update');
+
+    Route::get('/payroll', [AdminPayrollController::class, 'index'])->name('payroll');
+    Route::post('/payroll/close', [AdminPayrollController::class, 'close'])->name('payroll.close');
+    Route::get('/payroll/export/journal', [AdminPayrollController::class, 'exportJournal'])->name('payroll.export.journal');
+    Route::get('/payroll/export/cnss', [AdminPayrollController::class, 'exportCnss'])->name('payroll.export.cnss');
+    Route::get('/payroll/export/bank', [AdminPayrollController::class, 'exportBank'])->name('payroll.export.bank');
+    Route::get('/payroll/{payslip}/payslip', [AdminPayrollController::class, 'downloadPayslip'])->name('payroll.payslip');
     Route::get('/recruitment', [RecruitmentController::class, 'index'])->name('recruitment');
     Route::post('/recruitment/candidates', [RecruitmentController::class, 'storeCandidate'])->name('recruitment.candidates.store');
     Route::put('/recruitment/candidates/{candidate}', [RecruitmentController::class, 'updateCandidate'])->name('recruitment.candidates.update');
