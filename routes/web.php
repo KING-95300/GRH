@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\EmployeeController as AdminEmployeeController;
+use App\Http\Controllers\Admin\LeaveController as AdminLeaveController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
@@ -43,8 +45,21 @@ Route::middleware(['token.auth', 'verified'])->group(function () {
 
 Route::middleware(['token.auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::view('/dashboard', 'admin.dashboard')->name('dashboard');
-    Route::view('/employees', 'admin.employees')->name('employees');
-    Route::view('/leaves', 'admin.leaves')->name('leaves');
+
+    Route::get('/employees', [AdminEmployeeController::class, 'index'])->name('employees');
+    Route::post('/employees', [AdminEmployeeController::class, 'store'])->name('employees.store');
+    Route::get('/employees/export', [AdminEmployeeController::class, 'export'])->name('employees.export');
+    Route::delete('/employees/bulk', [AdminEmployeeController::class, 'bulkDestroy'])->name('employees.bulkDestroy');
+    Route::get('/employees/{employee}/cin', [AdminEmployeeController::class, 'downloadCin'])->name('employees.cin');
+    Route::put('/employees/{employee}', [AdminEmployeeController::class, 'update'])->name('employees.update');
+    Route::delete('/employees/{employee}', [AdminEmployeeController::class, 'destroy'])->name('employees.destroy');
+
+    Route::get('/leaves', [AdminLeaveController::class, 'index'])->name('leaves');
+    Route::post('/leaves', [AdminLeaveController::class, 'store'])->name('leaves.store');
+    Route::get('/leaves/export', [AdminLeaveController::class, 'export'])->name('leaves.export');
+    Route::get('/leaves/{leave}/attachment', [AdminLeaveController::class, 'downloadAttachment'])->name('leaves.attachment');
+    Route::patch('/leaves/{leave}/approve', [AdminLeaveController::class, 'approve'])->name('leaves.approve');
+    Route::patch('/leaves/{leave}/reject', [AdminLeaveController::class, 'reject'])->name('leaves.reject');
     Route::view('/attendance', 'admin.attendance')->name('attendance');
     Route::view('/departments', 'admin.departments')->name('departments');
     Route::view('/payroll', 'admin.payroll')->name('payroll');

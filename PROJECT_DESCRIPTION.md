@@ -48,21 +48,41 @@ Business logic is provided by the standard Breeze scaffolding (`routes/auth.php`
 
 ### Employee Management
 
-- List all employees in a table (`/employees`)
-- Add a new employee (`/employees/create`)
-- Edit an existing employee (`/employees/{id}/edit`)
-- Delete an employee with a confirmation prompt
-- Unique e-mail validation
-- The `Employee` model supports extended HR data: position, seniority, status, bank account, CIN, mobile numbers, CNSS number, notes, leave rights, leave tokens, and start time.
+The admin directory at `/admin/employees` is fully database-backed while preserving the Stitch design:
+
+- Live KPI cards computed from the database: total headcount, new hires this quarter, probation period, employees on leave, CNSS compliance rate
+- Server-side search (name, e-mail, CIN, position, mobile, CNSS) and filters by department, status, and seniority
+- Paginated table (8 per page) with avatars/initials, department and status badges, hire date, seniority, and row actions
+- Table/grid view toggle, bulk selection, and bulk deletion with confirmation
+- Streamed UTF-8 CSV export respecting the active filters
+- 4-step add/edit drawer (personal info, contract & position, pay & CNSS, leave rights) with client-side step validation and server-side validation
+- View drawer with contact details, legal/contract file, leave balances, CIN document download, and internal HR note
+- CIN (national ID) file upload/download stored on the private `local` disk; replacing or deleting an employee also removes their file
+- Unique e-mail validation, Tunisian CIN (8 digits) validation, phone normalization to `+216`, automatic seniority category calculation
+- Demo roster seeded by `EmployeeSeeder` (8 collaborators matching the Stitch design)
+
+Legacy resource routes (`/employees` CRUD outside the admin area) remain available from the original scaffold.
 
 ### Leave (Congé) Management
 
-- List all leave requests (`/conges`)
-- Create a leave request by selecting an employee from a dropdown
-- Store start date, end date, and reason
-- Server-side validation: `end_date` must be after `start_date`
-- Edit and delete existing leave records
-- French success messages after create, update, and delete
+The admin leaves page at `/admin/leaves` is fully database-backed while preserving the Stitch design:
+
+- Live KPI cards from the database: pending requests, collaborators absent today with presence rate, average leave balance with acquisition rate
+- Server-side search (employee, CIN, e-mail, reason) with debounced input, plus filters by type, status, department, and month (previous/next navigation)
+- Month filtering uses period overlap, so requests spanning two months appear in both
+- Paginated table (5 per page) with avatar, type icon, period note, working-day chip, motif/attachment, projected balance, status badge, and inline actions
+- Working days exclude Sunday (Tunisian weekly rest) and are computed server-side and mirrored live in the request modal
+- Approve/reject actions with CSRF-protected PATCH forms; approval of annual leave decrements `token_leave_days` in a transaction, rejection leaves the balance untouched
+- New-request modal wired to the database: employee selector with live balance, type, date range with duration/projected-balance calculation, reason, and PDF/image attachment (max 10 MB)
+- Attachments stored on the private `local` disk (`leave-documents/`) and downloadable from the table or details drawer; upload is validated (`pdf`, `jpg`, `jpeg`, `png`)
+- Details drawer (`?view={id}`) with request summary, collaborator contact data, validation trail (reviewer, decision date/note), attachment, and approve/reject footer
+- Team calendar view (`?display=calendar`) with a Monday-first grid, approved/pending/rejected chips, "+N autres" overflow, and a return-to-table link
+- Streamed UTF-8 CSV export (BOM, `;` delimiter) respecting the active filters
+- Flash toasts, empty state, and server-side validation feedback
+
+The original `/conges` resource routes remain available from the legacy scaffold.
+
+Demo data: `CongesSeeder` seeds 42 requests (7 pending, 31 approved, 4 rejected) relative to the current month, including requests covering today, demo PDF justifications, and reviewer metadata.
 
 ### Landing Page
 
@@ -131,8 +151,8 @@ Users with the `admin` role are redirected to `/admin/dashboard` after login and
 - Leave evolution bar chart (6 months) and headcount donut chart by department
 - Pending leave table with working Approve/Refuse actions
 - Weekly absences and recent activity feed
-- **Employees** — headcount KPIs, searchable/filterable employee table, add-employee modal
-- **Leaves** — leave KPIs, filters by type/status/department/period, approval table, new-request modal
+- **Employees** — fully persisted directory: database KPIs, search/filters, pagination, CSV export, grid view, bulk delete, 4-step add/edit drawer, view drawer, CIN upload/download
+- **Leaves** — fully persisted leave management: database KPIs, filters and month navigation, approval table with working approve/reject actions, new-request modal with live calculation and attachment, details drawer, team calendar, CSV export
 - **Attendance** — presence KPIs, daily punch journal, manual punch modal, weekly attendance chart, anomalies
 - **Departments** — department cards with leads and budgets, grid/org views, add-department modal, budget table
 - **Payroll** — payroll cycle KPIs, salary table, official payslip preview, CNSS/IRPP declarations
@@ -157,8 +177,10 @@ A `Student` model, migration, and resource controller exist as scaffolding, but 
 app/
 ├── Http/
 │   ├── Controllers/
+│   │   ├── Admin/
+│   │   │   └── EmployeeController.php # Admin employee CRUD, CSV, CIN files
 │   │   ├── Auth/                  # Breeze authentication controllers
-│   │   ├── EmployeeController.php # Employee CRUD
+│   │   ├── EmployeeController.php # Legacy employee CRUD
 │   │   ├── CongesController.php   # Leave CRUD
 │   │   ├── ProfileController.php  # User profile
 │   │   └── StudentController.php  # Unused scaffold
@@ -174,9 +196,11 @@ app/
     └── TokenService.php           # JWT issuance/validation, rotation, cookies
 
 database/
-├── migrations/                # users, refresh_tokens, employees, conges, students, auth/support tables
+├── migrations/                # users, refresh_tokens, employees (+HR fields), conges, students, auth/support tables
 ├── factories/
-└── seeders/DatabaseSeeder.php # Empty (no demo data by default)
+└── seeders/
+    ├── DatabaseSeeder.php     # Admin account + demo roster
+    └── EmployeeSeeder.php     # 8 demo collaborators (Stitch design)
 
 resources/views/
 ├── auth/                      # Login and register (HRM Pro Stitch design)
@@ -209,15 +233,24 @@ routes/
 |---|---|---|
 | `id` | bigint, PK | |
 | `name` | string | Required |
+| `avatar_url` | string, nullable | Optional profile photo |
 | `position` | string | Required |
+| `department` | string | `it`, `produit`, `commerce`, `finance`, `rh` |
+| `contract_type` | string | `CDI`, `CDD`, `SIVP`, `Stage` |
+| `hire_date` | date, nullable | Drives seniority |
 | `email` | string, unique | Required |
-| `seniority` | string | Required (not exposed in the create form) |
-| `status` | string | Required (not exposed in the create form) |
-| `bank_account` | string | Required (not exposed in the create form) |
-| `cin` | string | Required (not exposed in the create form) |
-| `mobile` | string | Required |
+| `seniority` | string | `junior`, `mid`, `senior` (computed from `hire_date`) |
+| `status` | string | `actif`, `essai`, `conge`, `inactif` |
+| `bank_account` | string | Defaults to "Non renseigné" |
+| `cin` | string | 8 digits; required in the admin form |
+| `date_of_birth` | date, nullable | |
+| `family_status` | string, nullable | `celibataire`, `marie`, `divorce`, `veuf` |
+| `children` | integer | Defaults to 0 |
+| `address` | string, nullable | |
+| `mobile` | string | Normalized to `+216 …` |
 | `work_mobile` | string | Required (not exposed in the create form) |
-| `cnss_number` | string | Required (not exposed in the create form) |
+| `cnss_number` | string | Defaults to "Non renseigné" |
+| `cin_file_path` | string, nullable | Private `local` disk path |
 | `employee_note` | text, nullable | |
 | `leave_rights` | integer, nullable | |
 | `token_leave_days` | integer, nullable | |
@@ -230,11 +263,22 @@ routes/
 | Column | Type | Notes |
 |---|---|---|
 | `id` | bigint, PK | |
-| `employee_name` | string | Employee is referenced by name, not ID |
+| `employee_id` | bigint, nullable, indexed | Links the request to `employees.id`; `employee_name` remains as a denormalized fallback |
+| `employee_name` | string | Copied from the employee at submission time |
+| `type` | string | `annuel`, `maladie`, `famille`, `sans-solde`, `recup` (default `annuel`) |
+| `status` | string | `pending`, `approved`, `rejected` (default `pending`) |
 | `start_date` | date | Required |
-| `end_date` | date | Must be after `start_date` |
+| `end_date` | date | Must be after or equal to `start_date` |
+| `working_days` | integer | Working days excluding Sunday |
 | `reason` | text | Required |
+| `attachment_path` | string, nullable | Private `local` disk path under `leave-documents/` |
+| `attachment_name` | string, nullable | Original file name shown in the UI |
+| `reviewed_at` | timestamp, nullable | Set on approval or rejection |
+| `reviewed_by` | bigint, nullable, indexed | References `users.id` (reviewing admin) |
+| `decision_note` | text, nullable | Optional rejection note |
 | `created_at`, `updated_at` | timestamps | |
+
+Compound indexes: `(status, start_date)`, `(employee_id, start_date)`.
 
 ### `refresh_tokens`
 
@@ -267,8 +311,19 @@ routes/
 | GET | `/mon-pointage` | Mon Pointage | `token.auth`, `verified` |
 | GET | `/mes-documents` | Mes Documents & Profil | `token.auth`, `verified` |
 | GET | `/admin/dashboard` | Admin HR dashboard | `token.auth`, `verified`, `admin` |
-| GET | `/admin/employees` | Admin employees | `token.auth`, `verified`, `admin` |
-| GET | `/admin/leaves` | Admin leaves | `token.auth`, `verified`, `admin` |
+| GET | `/admin/employees` | Admin employees directory | `token.auth`, `verified`, `admin` |
+| POST | `/admin/employees` | Create employee | `token.auth`, `verified`, `admin` |
+| PUT | `/admin/employees/{employee}` | Update employee | `token.auth`, `verified`, `admin` |
+| DELETE | `/admin/employees/{employee}` | Delete employee | `token.auth`, `verified`, `admin` |
+| DELETE | `/admin/employees/bulk` | Bulk delete employees | `token.auth`, `verified`, `admin` |
+| GET | `/admin/employees/export` | CSV export (filtered) | `token.auth`, `verified`, `admin` |
+| GET | `/admin/employees/{employee}/cin` | Download CIN document | `token.auth`, `verified`, `admin` |
+| GET | `/admin/leaves` | Admin leaves page (table, calendar, details drawer) | `token.auth`, `verified`, `admin` |
+| POST | `/admin/leaves` | Create leave request | `token.auth`, `verified`, `admin` |
+| GET | `/admin/leaves/export` | CSV export (filtered) | `token.auth`, `verified`, `admin` |
+| GET | `/admin/leaves/{leave}/attachment` | Download leave justification | `token.auth`, `verified`, `admin` |
+| PATCH | `/admin/leaves/{leave}/approve` | Approve request (decrements annual balance) | `token.auth`, `verified`, `admin` |
+| PATCH | `/admin/leaves/{leave}/reject` | Reject request (optional note) | `token.auth`, `verified`, `admin` |
 | GET | `/admin/attendance` | Admin attendance | `token.auth`, `verified`, `admin` |
 | GET | `/admin/departments` | Admin departments | `token.auth`, `verified`, `admin` |
 | GET | `/admin/payroll` | Admin payroll | `token.auth`, `verified`, `admin` |
@@ -358,8 +413,12 @@ Then open **http://127.0.0.1:8000**, register a user at `/register`, and log in.
 
 - Employee `email` must be a valid, unique e-mail address.
 - Employee `name`, `position`, and `mobile` are required on create.
-- A leave request requires an existing employee name, a start date, an end date, and a reason.
-- The end date must be strictly after the start date.
+- A leave request requires an existing employee, a valid type, a start date, an end date, and a reason.
+- The end date must be after or equal to the start date.
+- Working days are computed excluding Sunday, the Tunisian legal weekly rest day.
+- Approving an annual leave request decrements the employee's `token_leave_days` (never below zero) inside a transaction; rejecting a request never changes the balance.
+- Processed requests cannot be approved or rejected a second time.
+- Leave attachments must be `pdf`, `jpg`, `jpeg`, or `png` files no larger than 10 MB.
 - Deleting records is confirmed in the browser before submitting.
 
 ---
@@ -368,14 +427,14 @@ Then open **http://127.0.0.1:8000**, register a user at `/register`, and log in.
 
 These are current code-level issues, not setup problems:
 
-1. **Employee creation fails** — The create form submits only `name`, `email`, `mobile`, and `position`, while the `employees` table has six additional non-nullable columns (`seniority`, `status`, `bank_account`, `cin`, `work_mobile`, `cnss_number`). Submitting the form raises MySQL error `1364: Field '...' doesn't have a default value`. The same fields are also missing from the edit form.
-2. **Leave requests reference employees by name** — `conges.employee_name` stores a string. Renaming an employee does not update their leave records. The edit form posts `employee_id`, which is neither a table column nor a fillable attribute, so the employee cannot actually be changed on update.
-3. **Guest access to management pages** — The `employees` and `conges` routes are not protected by the `token.auth` middleware, but the shared layout calls `Auth::user()->name`. A guest reaching these URLs triggers an error; users must be logged in.
+1. **Legacy employee routes** — The original `/employees` resource routes (outside the admin area) still use the old scaffold whose create form does not submit all required columns. The admin directory at `/admin/employees` is fully functional.
+2. **Legacy leave routes reference employees by name** — the original `/conges` scaffold stores only `conges.employee_name`; the admin leave module adds `employee_id` but keeps the denormalized name, so renaming an employee does not rewrite historical leave rows.
+3. **Legacy guest access** — The legacy `/employees` and `/conges` routes are not protected by the `token.auth` middleware, but the shared layout calls `Auth::user()->name`. A guest reaching these URLs triggers an error; users must be logged in. All `/admin/*` routes are protected.
 4. **Incomplete student module** — The model/migration/controller scaffold is present but unused.
-5. **No demo data** — `DatabaseSeeder` is empty; the employee and leave lists start empty.
+5. **Demo roster** — `EmployeeSeeder` seeds 8 demo collaborators; production data should replace them.
 6. **Collaborator pages are presentation-only** — The dashboard, leave, payslip, attendance, and document pages reuse Stitch demo data. Identity fields come from the logged-in user, but leave requests, payslips, punches, and documents are not yet persisted to the database.
 7. **The admin password is a demo credential** — `admin@hometech.com` / `hometech123` is created for local testing and must be changed before any deployment.
-8. **Admin modules are presentation-only** — Every admin page uses Stitch demo data. Filters, modals, view switches, and approval buttons work client-side, but nothing is persisted to the database yet.
+8. **Other admin modules are presentation-only** — Apart from Employees and Leaves, the remaining admin pages use Stitch demo data. Filters, modals, view switches, and approval buttons work client-side, but nothing is persisted to the database yet.
 
 ---
 
