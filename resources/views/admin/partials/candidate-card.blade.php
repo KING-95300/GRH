@@ -115,7 +115,7 @@
                 <span>Onboarding</span>
                 <span class="material-symbols-outlined text-body-sm">arrow_forward</span>
             </button>
-            <button class="p-1 text-on-surface-variant hover:text-primary transition-colors" type="button" title="Modifier" data-json='@js($candidate->only(['id', 'name', 'email', 'phone', 'position', 'job_offer_id', 'avatar_url', 'match_percentage', 'experience_years', 'skills', 'source', 'salary_claim', 'availability', 'contract_type_target', 'stage', 'notes']))' onclick="openCandidateModal(this)">
+            <button class="p-1 text-on-surface-variant hover:text-primary transition-colors" type="button" title="Modifier" data-json="{{ json_encode($candidate->only(['id', 'name', 'email', 'phone', 'position', 'job_offer_id', 'avatar_url', 'match_percentage', 'experience_years', 'skills', 'source', 'salary_claim', 'availability', 'contract_type_target', 'stage', 'notes'])) }}" onclick="openCandidateModal(this)">
                 <span class="material-symbols-outlined text-body-md">edit</span>
             </button>
             <form method="POST" action="{{ route('admin.recruitment.candidates.destroy', $candidate) }}" onsubmit="return confirm('Supprimer ce candidat ?');">
@@ -137,7 +137,7 @@
             <button class="p-1 hover:text-primary transition-colors" type="button" title="Planifier un entretien" data-candidate-id="{{ $candidate->id }}" data-candidate-name="{{ $candidate->name }}" onclick="openInterviewModal(this)">
                 <span class="material-symbols-outlined text-body-md">event</span>
             </button>
-            <button class="p-1 hover:text-primary transition-colors" type="button" title="Modifier" data-json='@js($candidate->only(['id', 'name', 'email', 'phone', 'position', 'job_offer_id', 'avatar_url', 'match_percentage', 'experience_years', 'skills', 'source', 'salary_claim', 'availability', 'contract_type_target', 'stage', 'notes']))' onclick="openCandidateModal(this)">
+            <button class="p-1 hover:text-primary transition-colors" type="button" title="Modifier" data-json="{{ json_encode($candidate->only(['id', 'name', 'email', 'phone', 'position', 'job_offer_id', 'avatar_url', 'match_percentage', 'experience_years', 'skills', 'source', 'salary_claim', 'availability', 'contract_type_target', 'stage', 'notes'])) }}" onclick="openCandidateModal(this)">
                 <span class="material-symbols-outlined text-body-md">edit</span>
             </button>
             <form method="POST" action="{{ route('admin.recruitment.candidates.destroy', $candidate) }}" onsubmit="return confirm('Supprimer ce candidat ?');">

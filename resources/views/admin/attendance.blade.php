@@ -1,5 +1,33 @@
 <x-admin-shell active="attendance" title="Suivi du Pointage & Présence">
+@php
+    $filterQuery = array_filter([
+        'employee' => $employeeId,
+        'q' => $filters['q'],
+        'department' => $filters['department'],
+        'status' => $filters['status'],
+    ], fn ($value) => $value !== null && $value !== '');
+    $exportQuery = array_merge($filterQuery, ['date' => $selectedDate->toDateString()]);
+    $dayQuery = array_merge(array_diff_key($filterQuery, ['employee' => true]), ['date' => $selectedDate->toDateString()]);
+@endphp
 <div class="flex flex-col w-full pb-16">
+@if (session('success'))
+<div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-[80] sm:max-w-sm p-space-md rounded-xl bg-tertiary-fixed text-on-tertiary-fixed shadow-lg flex items-start gap-space-sm" data-flash-toast role="status">
+<span class="material-symbols-outlined text-body-lg shrink-0">check_circle</span>
+<span class="font-label-md text-label-md">{{ session('success') }}</span>
+<button class="ml-2 text-on-tertiary-fixed/70 hover:text-on-tertiary-fixed" type="button" onclick="this.parentElement.remove()" aria-label="Fermer">
+<span class="material-symbols-outlined text-body-md">close</span>
+</button>
+</div>
+@endif
+@if (session('error'))
+<div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-[80] sm:max-w-sm p-space-md rounded-xl bg-error-container text-on-error-container shadow-lg flex items-start gap-space-sm" data-flash-toast role="alert">
+<span class="material-symbols-outlined text-body-lg shrink-0">error</span>
+<span class="font-label-md text-label-md">{{ session('error') }}</span>
+<button class="ml-2 text-on-error-container/70 hover:text-on-error-container" type="button" onclick="this.parentElement.remove()" aria-label="Fermer">
+<span class="material-symbols-outlined text-body-md">close</span>
+</button>
+</div>
+@endif
 <!-- Top Navigation & Breadcrumbs -->
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-5">
 <div class="flex flex-col gap-1">
@@ -21,10 +49,10 @@
 </div>
 <!-- Main Header Action CTAs -->
 <div class="flex items-center gap-2.5">
-<button class="h-9 px-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg flex items-center gap-2 shadow-sm transition-all" type="button">
+<a class="h-9 px-3.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg flex items-center gap-2 shadow-sm transition-all" href="{{ route('admin.attendance.export', $exportQuery) }}">
 <span class="material-symbols-outlined text-body-lg text-secondary">file_download</span>
 <span>Exporter Rapport</span>
-</button>
+</a>
 <button class="h-9 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg flex items-center gap-2 shadow-sm transition-all active:scale-[0.98]" id="openModalBtn" type="button">
 <span class="material-symbols-outlined text-body-md">add_circle</span>
 <span>+ Pointage Manuel</span>
@@ -36,21 +64,21 @@
 <!-- KPI 1: Présents -->
 <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
 <div class="flex items-center justify-between">
-<span class="font-label-md text-label-md text-on-surface-variant">Effectif Présent Aujourd'hui</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Effectif Présent {{ $selectedDate->isToday() ? "Aujourd'hui" : $selectedDate->format('d/m') }}</span>
 <div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary">
 <span class="material-symbols-outlined text-body-lg" style="font-variation-settings: 'FILL' 1;">badge</span>
 </div>
 </div>
 <div class="my-3 flex items-baseline gap-2">
-<span class="font-display-lg text-display-lg text-on-surface tracking-tight">43</span>
-<span class="font-headline-sm text-headline-sm text-on-surface-variant">/ 48</span>
+<span class="font-display-lg text-display-lg text-on-surface tracking-tight">{{ $presentCount }}</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant">/ {{ $activeEmployees }}</span>
 </div>
 <div class="flex items-center justify-between font-label-sm text-label-sm">
 <span class="inline-flex items-center gap-1 text-tertiary font-semibold">
 <span class="material-symbols-outlined text-[15px]">trending_up</span>
-          89.6% Taux présence
+          {{ $presenceRate }}% Taux présence
         </span>
-<span class="text-on-surface-variant">3 sites synchro</span>
+<span class="text-on-surface-variant">{{ $syncedModes }} modes synchro</span>
 </div>
 <div class="absolute bottom-0 left-0 right-0 h-1 bg-tertiary-fixed"></div>
 </div>
@@ -63,12 +91,12 @@
 </div>
 </div>
 <div class="my-3 flex items-baseline gap-2">
-<span class="font-display-lg text-display-lg text-on-surface tracking-tight">3</span>
+<span class="font-display-lg text-display-lg text-on-surface tracking-tight">{{ $lateCount }}</span>
 <span class="font-body-sm text-body-sm text-on-surface-variant">collaborateurs</span>
 </div>
 <div class="flex items-center justify-between font-label-sm text-label-sm">
 <span class="text-on-secondary-container font-medium">Tolérance &gt; 15 min</span>
-<span class="text-on-surface-variant">Moy. +21 min</span>
+<span class="text-on-surface-variant">Moy. +{{ $averageLate }} min</span>
 </div>
 <div class="absolute bottom-0 left-0 right-0 h-1 bg-secondary-fixed"></div>
 </div>
@@ -81,13 +109,13 @@
 </div>
 </div>
 <div class="my-3 flex items-baseline gap-2">
-<span class="font-display-lg text-display-lg text-error tracking-tight">2</span>
+<span class="font-display-lg text-display-lg text-error tracking-tight">{{ $absenceCount }}</span>
 <span class="font-body-sm text-body-sm text-on-surface-variant">sans préavis</span>
 </div>
 <div class="flex items-center justify-between font-label-sm text-label-sm">
 <span class="inline-flex items-center gap-1 text-error font-medium">
 <span class="material-symbols-outlined text-[14px]">notification_important</span>
-          2 Rappels envoyés
+          {{ $absenceCount }} Rappels envoyés
         </span>
 <span class="text-on-surface-variant">Délai 48h</span>
 </div>
@@ -102,12 +130,12 @@
 </div>
 </div>
 <div class="my-3 flex items-baseline gap-2">
-<span class="font-display-lg text-display-lg text-primary tracking-tight">34,5</span>
+<span class="font-display-lg text-display-lg text-primary tracking-tight">{{ number_format($overtimeHours, 1, ',', ' ') }}</span>
 <span class="font-headline-sm text-headline-sm text-on-surface-variant">heures</span>
 </div>
 <div class="flex items-center justify-between font-label-sm text-label-sm">
 <span class="text-primary font-semibold">Taux légal: 125% / 150%</span>
-<span class="text-on-surface-variant">12 agents</span>
+<span class="text-on-surface-variant">{{ $overtimeAgents }} agents</span>
 </div>
 <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary"></div>
 </div>
@@ -117,65 +145,77 @@
 <!-- Date Navigation Segment -->
 <div class="flex items-center flex-wrap gap-2">
 <div class="inline-flex items-center bg-surface-container-low p-1 rounded-xl">
-<button aria-label="Jour précédent" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<a aria-label="Jour précédent" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" href="{{ route('admin.attendance', array_merge($filterQuery, ['date' => $previousDate->toDateString()])) }}">
 <span class="material-symbols-outlined text-body-md">chevron_left</span>
-</button>
+</a>
 <div class="flex items-center gap-2 px-3 py-1">
 <span class="material-symbols-outlined text-primary text-body-md">calendar_today</span>
-<span class="font-label-lg text-label-lg text-on-surface font-semibold">Mardi 18 Mars 2025</span>
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">{{ $dateLabel }}</span>
 </div>
-<button aria-label="Jour suivant" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<a aria-label="Jour suivant" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" href="{{ route('admin.attendance', array_merge($filterQuery, ['date' => $nextDate->toDateString()])) }}">
 <span class="material-symbols-outlined text-body-md">chevron_right</span>
-</button>
+</a>
 </div>
-<button class="h-8 px-3 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors" type="button">
+<a class="h-8 px-3 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors flex items-center" href="{{ route('admin.attendance', array_merge($filterQuery, ['date' => today()->toDateString()])) }}">
         Aujourd'hui
-      </button>
+      </a>
 <span class="text-on-surface-variant font-label-sm text-label-sm ml-2 hidden xl:inline">Cycle normal : 08:30 - 17:30</span>
 </div>
 <!-- Filters & Search Query -->
-<div class="flex items-center flex-wrap gap-3">
+<form class="flex items-center flex-wrap gap-3" id="attendanceFilterForm" method="GET" action="{{ route('admin.attendance') }}">
+<input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}"/>
+@if ($employeeId)
+<input type="hidden" name="employee" value="{{ $employeeId }}"/>
+@endif
 <!-- Search Input -->
 <div class="relative min-w-[220px]">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-<input class="w-full h-9 pl-9 pr-3 rounded-xl bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" id="searchInput" placeholder="Filtrer collaborateur, matricule..." type="text"/>
+<input class="w-full h-9 pl-9 pr-3 rounded-xl bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" id="searchInput" name="q" value="{{ $filters['q'] }}" placeholder="Filtrer collaborateur, matricule..." type="text"/>
 </div>
 <!-- Department Filter -->
 <div class="relative">
-<select class="h-9 pl-3 pr-8 rounded-xl bg-surface-container-low font-label-md text-label-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container cursor-pointer">
-<option value="all">Tous Départements</option>
-<option value="tech">Ingénierie &amp; Tech</option>
-<option value="rh">Ressources Humaines</option>
-<option value="finance">Comptabilité &amp; Finance</option>
-<option value="operations">Opérations Tunis/Sfax</option>
-<option value="marketing">Marketing &amp; Ventes</option>
+<select class="h-9 pl-3 pr-8 rounded-xl bg-surface-container-low font-label-md text-label-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container cursor-pointer" name="department" onchange="this.form.requestSubmit()">
+<option value="">Tous Départements</option>
+@foreach (\App\Models\Employee::DEPARTMENTS as $key => $label)
+<option value="{{ $key }}" @selected($filters['department'] === $key)>{{ $label }}</option>
+@endforeach
 </select>
 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">arrow_drop_down</span>
 </div>
 <!-- Attendance Status Filter -->
 <div class="relative">
-<select class="h-9 pl-3 pr-8 rounded-xl bg-surface-container-low font-label-md text-label-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container cursor-pointer" id="statusFilter">
-<option value="all">Tous les Statuts</option>
-<option value="ontime">À l'heure</option>
-<option value="late">En Retard</option>
-<option value="remote">Télétravail</option>
-<option value="absent">Absent Non Justifié</option>
-<option value="leave">En Congé Légal</option>
+<select class="h-9 pl-3 pr-8 rounded-xl bg-surface-container-low font-label-md text-label-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container cursor-pointer" id="statusFilter" name="status" onchange="this.form.requestSubmit()">
+<option value="">Tous les Statuts</option>
+<option value="ontime" @selected($filters['status'] === 'ontime')>À l'heure</option>
+<option value="late" @selected($filters['status'] === 'late')>En Retard</option>
+<option value="remote" @selected($filters['status'] === 'remote')>Télétravail</option>
+<option value="absent" @selected($filters['status'] === 'absent')>Absent Non Justifié</option>
+<option value="leave" @selected($filters['status'] === 'leave')>En Congé Légal</option>
 </select>
 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">arrow_drop_down</span>
 </div>
-</div>
+<button class="sr-only" type="submit">Filtrer</button>
+</form>
 </div>
 <!-- Main Roster Attendance Data Table -->
 <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-8">
 <div class="p-4 bg-surface-container-low/50 flex items-center justify-between">
 <div class="flex items-center gap-3">
-<span class="font-headline-sm text-headline-sm text-on-surface">Journal des Pointages Journaliers</span>
-<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">48 collaborateurs inscrits</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">{{ $historyEmployee ? 'Historique des Pointages' : 'Journal des Pointages Journaliers' }}</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+          @if ($historyEmployee)
+            {{ $records->total() }} pointages • {{ $historyEmployee->name }}
+          @else
+            {{ $activeEmployees }} collaborateurs actifs
+          @endif
+        </span>
+@if ($historyEmployee)
+<a class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm hover:bg-primary-container transition-colors" href="{{ route('admin.attendance', $dayQuery) }}">Revenir au jour</a>
+@endif
 </div>
 <div class="flex items-center gap-2">
 <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1.5">
-<span class="w-2 h-2 rounded-full bg-tertiary"></span> Terminal Lac 2 En Ligne
+<span class="w-2 h-2 rounded-full {{ $syncedModes > 0 ? 'bg-tertiary' : 'bg-error' }}"></span> {{ $syncedModes > 0 ? 'Terminal Lac 2 En Ligne' : 'Terminal hors ligne' }}
         </span>
 </div>
 </div>
@@ -195,330 +235,141 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-surface-container font-body-md text-body-md text-on-surface">
-<!-- Row 1: Mohamed Ben Salem -->
-<tr class="hover:bg-surface-container-low/60 transition-colors h-14">
+@forelse ($records as $record)
+@php
+    $employee = $record->employee;
+    $isLate = $record->status === 'late';
+@endphp
+<tr class="hover:bg-surface-container-low/60 transition-colors h-14 {{ $record->rowClasses() }}">
 <td class="px-4 py-2.5">
 <div class="flex items-center gap-3">
-<img class="w-9 h-9 rounded-full object-cover shrink-0" data-alt="Professional headshot of a North African male software engineering manager wearing a navy blazer in a modern office in Tunis with soft daylight and clean corporate background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSpfNRQSQfIqtzTtdwCxulZuSGb4nGvmMfucnvTgFbmLg9zkGhBcSi3hC5t9nWLVKLWYGyTr_nDbKtLBMrR0rWKTCw0KYz8ofnPUxhnQfIG5AazEyH_ibZeqCYhw-cfLo6T3FUqnu5SdJP0Vl2L_VqJjtQQ27_9J3VWkDt2b2WKJ70xAYmPYWzfUnlhdi7Th2QEvEU1GJFR0TVFYEf5df0-nFuYcumMo4HISl9ib1xXzmCEWbtCM8K"/>
-<div class="flex flex-col min-w-0">
-<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mohamed Ben Salem</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-0419 • Lead Développeur</span>
-</div>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">R&amp;D Tech</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">08:28</span>
-<span class="inline-flex items-center text-[11px] text-tertiary bg-tertiary-fixed/40 px-1.5 py-0.2 rounded font-medium">À l'heure</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant italic">En poste...</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant">45 min</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">6h 12m</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
-<span>Biométrie Lac 2</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-tertiary font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Présent
-              </span>
-</td>
-<td class="px-4 py-2.5 text-right">
-<div class="flex items-center justify-end gap-1">
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary transition-colors" title="Modifier le pointage" type="button">
-<span class="material-symbols-outlined text-body-md">edit</span>
-</button>
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-on-surface transition-colors" title="Consulter l'historique" type="button">
-<span class="material-symbols-outlined text-body-md">history</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 2: Yasmine Trabelsi (Retard) -->
-<tr class="hover:bg-surface-container-low/60 transition-colors h-14 bg-error-container/10">
-<td class="px-4 py-2.5">
-<div class="flex items-center gap-3">
-<img class="w-9 h-9 rounded-full object-cover shrink-0" data-alt="Portrait of a young Tunisian female marketing specialist smiling gently, natural corporate headshot with clean minimalist background and bright studio light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5t5Jvq58bVzzXOlTRTe5u5BB-yDvoZzY9vhCgdTOKikE4-UCEk5L6MD7b7CyMw_5fDDVUQ1PbREvah-QAcRJTAUvQ9g3svgmh0bxrlRPTsQjWC8s7elRhfqy1rJ6N1IR9ns1a9Y3460j6A6c5lEJUTiPqEsgQcyZ_QiDRV9V4JzQKsmQS_yRmLzTeivFYGsB4G7YwgifXAeWkReNoo6_DAIW8iZUU-JRPynG-fn3jdY-Cf_yPAFKo"/>
-<div class="flex flex-col min-w-0">
-<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Yasmine Trabelsi</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-0582 • Product Manager</span>
-</div>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">Produit</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-error">08:54</span>
-<span class="inline-flex items-center text-[11px] text-error bg-error-container px-1.5 py-0.2 rounded font-medium">+24 min</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant italic">En poste...</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant">50 min</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">5h 46m</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-[16px] text-secondary">contactless</span>
-<span>Badge RFID RDC</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container/40 font-label-sm text-label-sm text-error font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Retard Notifié
-              </span>
-</td>
-<td class="px-4 py-2.5 text-right">
-<div class="flex items-center justify-end gap-1">
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-secondary hover:text-on-surface transition-colors" title="Demander justification" type="button">
-<span class="material-symbols-outlined text-body-md">mail</span>
-</button>
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary transition-colors" title="Modifier le pointage" type="button">
-<span class="material-symbols-outlined text-body-md">edit</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 3: Mehdi Zghal (Télétravail) -->
-<tr class="hover:bg-surface-container-low/60 transition-colors h-14">
-<td class="px-4 py-2.5">
-<div class="flex items-center gap-3">
-<img class="w-9 h-9 rounded-full object-cover shrink-0" data-alt="Middle-aged Tunisian male senior data analyst with glasses in business casual shirt, warm office atmosphere and subtle tech monitors in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqqzr4_xFE7s444jQzq1c2qMXcJIAvp8Avfq0S6Xclzgxx5uggOlGLyfZbcQpevUbHriJjAiOs1PvC4TsQBhGLVL4wkNHFohonLnv1RCFcvgskH2lA-KY34x9wKwaqS3wDhil7rTbCQEtTdEJwjuhnLnGCWyjceiqMkMu5_62wi4Y6oH_uLsV9cmOsrBY_tQQBgGXjTn-tkwWF1PigtnFQfjK-wt88DRS7OSeSgnPmmoR7YfTf8TXm"/>
-<div class="flex flex-col min-w-0">
-<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Mehdi Zghal</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-0312 • Architecte Cloud</span>
-</div>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">Infrastructure</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">08:10</span>
-<span class="inline-flex items-center text-[11px] text-primary bg-primary-fixed px-1.5 py-0.2 rounded font-medium">À distance</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant italic">En ligne</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant">1h 00m</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">6h 30m</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-[16px] text-primary-container">laptop_mac</span>
-<span>Portail Web SSO</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container font-label-sm text-label-sm text-on-secondary-fixed font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> Télétravail Validé
-              </span>
-</td>
-<td class="px-4 py-2.5 text-right">
-<div class="flex items-center justify-end gap-1">
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary transition-colors" title="Modifier le pointage" type="button">
-<span class="material-symbols-outlined text-body-md">edit</span>
-</button>
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-on-surface transition-colors" title="Détails de session" type="button">
-<span class="material-symbols-outlined text-body-md">info</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4: Nour El Houda Karray -->
-<tr class="hover:bg-surface-container-low/60 transition-colors h-14">
-<td class="px-4 py-2.5">
-<div class="flex items-center gap-3">
-<img class="w-9 h-9 rounded-full object-cover shrink-0" data-alt="Portrait of an elegant Tunisian female HR professional wearing modern executive attire, well-lit indoor corporate setting with neutral clean colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlkXnJ-GLW_WzBGs_MspuAOSe1lFuW9wZCtf2NQr8tPT0FPM1PETcBTjgdHv5Osl_UtQCW_YzsfYchco9acEKyZKi6eMFNvW04gIB4LpA8pK8JmozQ-sEvRGmK8g_GUmamNPetfuYfriDC47XSt05Rft_oH7FMW3BwndccBKZ4_NaT5ctj8Tor9DxPcwET-8qhQq91f2uTDrDDGv1FYnepVA4r2OcVyEDFpSipdtD11o9q9IplfnUw"/>
-<div class="flex flex-col min-w-0">
-<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Nour El Houda Karray</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-0654 • Chargée Recrutement</span>
-</div>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">Ressources Humaines</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">08:30</span>
-<span class="inline-flex items-center text-[11px] text-tertiary bg-tertiary-fixed/40 px-1.5 py-0.2 rounded font-medium">À l'heure</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant italic">En poste...</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant">40 min</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">6h 10m</span>
-</td>
-<td class="px-3 py-2.5">
-<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
-<span>Biométrie Lac 2</span>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-tertiary font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Présent
-              </span>
-</td>
-<td class="px-4 py-2.5 text-right">
-<div class="flex items-center justify-end gap-1">
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary transition-colors" title="Modifier le pointage" type="button">
-<span class="material-symbols-outlined text-body-md">edit</span>
-</button>
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-on-surface transition-colors" title="Détails" type="button">
-<span class="material-symbols-outlined text-body-md">history</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 5: Sonia Mezghani (Absent Non Justifié) -->
-<tr class="hover:bg-surface-container-low/60 transition-colors h-14 bg-error-container/20">
-<td class="px-4 py-2.5">
-<div class="flex items-center gap-3">
+@if ($employee?->avatar_url)
+<img class="w-9 h-9 rounded-full object-cover shrink-0" data-alt="Portrait professionnel de {{ $employee->name }}" src="{{ $employee->avatar_url }}"/>
+@else
 <div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md text-on-surface-variant font-bold">
-                  SM
+                  {{ $employee?->initials() ?? '?' }}
                 </div>
+@endif
 <div class="flex flex-col min-w-0">
-<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Sonia Mezghani</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-0220 • Comptable Fournisseurs</span>
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">{{ $employee?->name ?? 'Collaborateur supprimé' }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-{{ str_pad((string) $record->employee_id, 4, '0', STR_PAD_LEFT) }} • {{ $employee?->position ?? '—' }}</span>
 </div>
 </div>
 </td>
 <td class="px-3 py-2.5">
-<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">Comptabilité</span>
+<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">{{ $employee?->departmentShortLabel() ?? '—' }}</span>
 </td>
 <td class="px-3 py-2.5">
-<span class="font-label-sm text-label-sm text-error font-medium">Non pointé</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-sm text-label-sm text-on-surface-variant">—</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-sm text-label-sm text-on-surface-variant">—</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-error">0h 00m</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-sm text-label-sm text-on-surface-variant italic">Aucun enregistrement</span>
-</td>
-<td class="px-3 py-2.5">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container font-label-sm text-label-sm text-on-error-container font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Absent Injustifié
-              </span>
-</td>
-<td class="px-4 py-2.5 text-right">
-<div class="flex items-center justify-end gap-1">
-<button class="h-7 px-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-error font-label-sm text-label-sm transition-colors flex items-center gap-1" type="button">
-<span class="material-symbols-outlined text-[14px]">send</span> Relancer
-                </button>
-</div>
-</td>
-</tr>
-<!-- Row 6: Karim Chaabane -->
-<tr class="hover:bg-surface-container-low/60 transition-colors h-14">
-<td class="px-4 py-2.5">
-<div class="flex items-center gap-3">
-<img class="w-9 h-9 rounded-full object-cover shrink-0" data-alt="Portrait of an experienced Tunisian senior sales director in tailored suit, bright contemporary corporate glass building in Tunis" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAi0za5WJYzc6MKIUZ3imLvqtIs8r9CwgHD2fgJWt037Mu1JPH9WemmEu8AK-WZJsjhM5SjpjD9bG390zBoF2vAajSCqCSaR7KVA2NT2x0PwpqyxS8mi-o8mG01Bqn2Mos2gHFg9VT1TzH0Ip6Dh4LE0d_tfoM8_XRhwjKbOHpOX4j-FXR_kTS4jgD8awsXCNhgCzricLCruQZ98oGPVQoGnYYsPB8KtgS3yE1vq3dOvaXv3vVvqbgJ"/>
-<div class="flex flex-col min-w-0">
-<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Karim Chaabane</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant truncate">MAT-0105 • VP Business Dev</span>
-</div>
-</div>
-</td>
-<td class="px-3 py-2.5">
-<span class="font-label-md text-label-md text-on-surface bg-surface-container px-2 py-0.5 rounded">Direction Ventes</span>
-</td>
-<td class="px-3 py-2.5">
+@if ($record->check_in)
 <div class="flex items-center gap-1.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">08:15</span>
+<span class="font-numeric-md text-numeric-md font-semibold {{ $isLate ? 'text-error' : 'text-on-surface' }}">{{ $record->checkInShort() }}</span>
+@if ($isLate)
+<span class="inline-flex items-center text-[11px] text-error bg-error-container px-1.5 py-0.2 rounded font-medium">+{{ $record->lateMinutes() }} min</span>
+@elseif ($record->status === 'remote')
+<span class="inline-flex items-center text-[11px] text-primary bg-primary-fixed px-1.5 py-0.2 rounded font-medium">À distance</span>
+@else
 <span class="inline-flex items-center text-[11px] text-tertiary bg-tertiary-fixed/40 px-1.5 py-0.2 rounded font-medium">À l'heure</span>
+@endif
 </div>
+@else
+<span class="font-label-sm text-label-sm font-medium {{ $record->status === 'absent' ? 'text-error' : 'text-on-surface-variant' }}">
+              {{ $record->status === 'absent' ? 'Non pointé' : ($record->status === 'leave' ? 'En congé' : '—') }}
+            </span>
+@endif
 </td>
 <td class="px-3 py-2.5">
+@if ($record->check_out)
+<span class="font-numeric-md text-numeric-md text-on-surface">{{ $record->checkOutShort() }}</span>
+@elseif (in_array($record->status, ['absent', 'leave'], true))
+<span class="font-label-sm text-label-sm text-on-surface-variant">—</span>
+@else
 <span class="font-numeric-md text-numeric-md text-on-surface-variant italic">En poste...</span>
+@endif
 </td>
 <td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md text-on-surface-variant">30 min</span>
+<span class="font-numeric-md text-numeric-md text-on-surface-variant">{{ $record->breakLabel() }}</span>
 </td>
 <td class="px-3 py-2.5">
-<span class="font-numeric-md text-numeric-md font-semibold text-on-surface">6h 25m</span>
+<span class="font-numeric-md text-numeric-md font-semibold {{ $record->status === 'absent' ? 'text-error' : 'text-on-surface' }}">{{ $record->workedLabel() }}</span>
 </td>
 <td class="px-3 py-2.5">
+@if ($record->check_in && $record->mode !== 'none')
 <div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
-<span class="material-symbols-outlined text-[16px] text-secondary">contactless</span>
-<span>Badge RFID RDC</span>
+<span class="material-symbols-outlined text-[16px] {{ $record->modeColor() }}">{{ $record->modeIcon() }}</span>
+<span>{{ $record->modeLabel() }}</span>
 </div>
+@else
+<span class="font-label-sm text-label-sm text-on-surface-variant italic">Aucun enregistrement</span>
+@endif
 </td>
 <td class="px-3 py-2.5">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-tertiary font-semibold">
-<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Présent
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold {{ $record->statusPillClasses() }}">
+<span class="w-1.5 h-1.5 rounded-full {{ $record->statusDotClasses() }}"></span> {{ $record->statusLabel() }}
               </span>
 </td>
 <td class="px-4 py-2.5 text-right">
 <div class="flex items-center justify-end gap-1">
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary transition-colors" title="Modifier le pointage" type="button">
+@if ($record->status === 'absent' && $employee)
+<a class="h-7 px-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-error font-label-sm text-label-sm transition-colors flex items-center gap-1" href="mailto:{{ $employee->email }}?subject={{ rawurlencode('Rappel de pointage — '.$record->work_date->format('d/m/Y')) }}">
+<span class="material-symbols-outlined text-[14px]">send</span> Relancer
+                </a>
+@else
+<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary transition-colors js-edit-punch" data-date="{{ $record->work_date->toDateString() }}" data-direction="in" data-employee="{{ $record->employee_id }}" data-time="{{ $record->check_in ? substr($record->check_in, 0, 5) : '08:30' }}" title="Modifier le pointage" type="button">
 <span class="material-symbols-outlined text-body-md">edit</span>
 </button>
-<button class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-on-surface transition-colors" title="Détails" type="button">
-<span class="material-symbols-outlined text-body-md">history</span>
-</button>
+<a class="p-1.5 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-on-surface transition-colors" href="{{ route('admin.attendance', array_merge($filterQuery, ['date' => $selectedDate->toDateString(), 'employee' => $record->employee_id])) }}" title="Consulter l'historique">
+<span class="material-symbols-outlined text-body-md">{{ $record->status === 'remote' ? 'info' : 'history' }}</span>
+</a>
+@endif
 </div>
 </td>
 </tr>
+@empty
+<tr>
+<td class="px-4 py-10 text-center" colspan="9">
+<div class="flex flex-col items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-headline-lg">event_busy</span>
+<span class="font-body-md text-body-md">Aucun pointage ne correspond à cette date ou à ces filtres.</span>
+<a class="font-label-md text-label-md text-primary hover:underline" href="{{ route('admin.attendance', $dayQuery) }}">Réinitialiser les filtres</a>
+</div>
+</td>
+</tr>
+@endforelse
 </tbody>
 </table>
 </div>
 <!-- Table Pagination Footer -->
 <div class="p-4 bg-surface-container-low/40 flex flex-col sm:flex-row items-center justify-between gap-3">
 <span class="font-label-sm text-label-sm text-on-surface-variant">
-        Affichage de 1 à 6 sur 48 collaborateurs actifs
+        Affichage de {{ $records->firstItem() ?? 0 }} à {{ $records->lastItem() ?? 0 }} sur {{ $records->total() }} pointages
       </span>
+@if ($records->hasPages())
 <div class="flex items-center gap-1.5">
+@if ($records->onFirstPage())
 <button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface-variant opacity-50 cursor-not-allowed font-label-sm text-label-sm shadow-sm" disabled="" type="button">
           Précédent
         </button>
-<button class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-sm text-label-sm shadow-sm" type="button">
-          1
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" type="button">
-          2
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" type="button">
-          3
-        </button>
-<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" type="button">
+@else
+<a class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" href="{{ $records->previousPageUrl() }}">
+          Précédent
+        </a>
+@endif
+@foreach ($records->getUrlRange(max(1, $records->currentPage() - 1), min($records->lastPage(), $records->currentPage() + 1)) as $page => $url)
+<a class="px-3 py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors {{ $page === $records->currentPage() ? 'bg-primary-container text-on-primary' : 'bg-surface-container-lowest hover:bg-surface-container text-on-surface' }}" href="{{ $url }}">
+          {{ $page }}
+        </a>
+@endforeach
+@if ($records->hasMorePages())
+<a class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" href="{{ $records->nextPageUrl() }}">
+          Suivant
+        </a>
+@else
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface-variant opacity-50 cursor-not-allowed font-label-sm text-label-sm shadow-sm" disabled="" type="button">
           Suivant
         </button>
+@endif
 </div>
+@endif
 </div>
 </div>
 <!-- Bottom Analytics & Compliance Section: Weekly Breakdown + Anomaly Stream -->
@@ -541,48 +392,20 @@
 </div>
 <!-- Compact SVG Bar Visualization -->
 <div class="h-44 w-full flex items-end gap-6 pt-4 pb-2 px-2">
-<!-- Lun -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-<span class="font-label-sm text-label-sm text-on-surface-variant">94%</span>
-<div class="w-full max-w-[48px] bg-surface-container-low rounded-t-lg h-full flex flex-col justify-end p-1">
-<div class="w-full bg-secondary-fixed rounded-t-sm h-[8%]"></div>
-<div class="w-full bg-primary rounded-b-sm h-[86%]"></div>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface font-medium">Lun 17</span>
-</div>
-<!-- Mar (Aujourd'hui) -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-<span class="font-label-sm text-label-sm text-primary font-bold">89.6%</span>
-<div class="w-full max-w-[48px] bg-primary-fixed/20 rounded-t-lg h-full flex flex-col justify-end p-1 ring-1 ring-primary/20">
-<div class="w-full bg-secondary-fixed rounded-t-sm h-[6%]"></div>
-<div class="w-full bg-primary-container rounded-b-sm h-[84%]"></div>
-</div>
-<span class="font-label-sm text-label-sm text-primary font-bold">Mar 18</span>
-</div>
-<!-- Mer (Estimé) -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end opacity-40">
-<span class="font-label-sm text-label-sm text-on-surface-variant">--</span>
-<div class="w-full max-w-[48px] bg-surface-container-low rounded-t-lg h-full flex flex-col justify-end p-1">
+@foreach ($weekDays as $day)
+<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end {{ $day['isFuture'] ? 'opacity-40' : '' }}">
+<span class="font-label-sm text-label-sm {{ $day['isToday'] ? 'text-primary font-bold' : 'text-on-surface-variant' }}">{{ $day['rate'] !== null ? $day['rate'].'%' : '--' }}</span>
+<div class="w-full max-w-[48px] rounded-t-lg h-full flex flex-col justify-end p-1 {{ $day['isToday'] ? 'bg-primary-fixed/20 ring-1 ring-primary/20' : 'bg-surface-container-low' }}">
+@if ($day['rate'] !== null)
+<div class="w-full bg-secondary-fixed rounded-t-sm" style="height: {{ $day['lateHeight'] }}%"></div>
+<div class="w-full {{ $day['isToday'] ? 'bg-primary-container' : 'bg-primary' }} rounded-b-sm" style="height: {{ $day['primaryHeight'] }}%"></div>
+@else
 <div class="w-full bg-surface-container-high rounded-t-sm h-[70%]"></div>
+@endif
 </div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Mer 19</span>
+<span class="font-label-sm text-label-sm {{ $day['isToday'] ? 'text-primary font-bold' : 'text-on-surface-variant' }}">{{ $day['label'] }}</span>
 </div>
-<!-- Jeu -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end opacity-40">
-<span class="font-label-sm text-label-sm text-on-surface-variant">--</span>
-<div class="w-full max-w-[48px] bg-surface-container-low rounded-t-lg h-full flex flex-col justify-end p-1">
-<div class="w-full bg-surface-container-high rounded-t-sm h-[70%]"></div>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Jeu 20</span>
-</div>
-<!-- Ven -->
-<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end opacity-40">
-<span class="font-label-sm text-label-sm text-on-surface-variant">--</span>
-<div class="w-full max-w-[48px] bg-surface-container-low rounded-t-lg h-full flex flex-col justify-end p-1">
-<div class="w-full bg-surface-container-high rounded-t-sm h-[70%]"></div>
-</div>
-<span class="font-label-sm text-label-sm text-on-surface-variant">Ven 21</span>
-</div>
+@endforeach
 </div>
 <div class="mt-4 pt-3 flex items-center justify-between bg-surface-container-low/40 rounded-lg p-2.5">
 <div class="flex items-center gap-2">
@@ -598,48 +421,55 @@
 <div class="flex items-center justify-between mb-3">
 <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
 <span>Anomalies de Pointage</span>
-<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">3</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">{{ count($anomalies) }}</span>
 </h2>
-<button class="font-label-sm text-label-sm text-primary hover:underline" type="button">Tout traiter</button>
+@if (count($anomalies) > 0)
+<form method="POST" action="{{ route('admin.attendance.anomalies.resolveAll') }}">
+@csrf
+<input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}"/>
+<button class="font-label-sm text-label-sm text-primary hover:underline" type="submit">Tout traiter</button>
+</form>
+@endif
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-4">Événements exigeant une régularisation RH rapide</p>
 <!-- Anomaly List -->
 <div class="space-y-3">
-<!-- Item 1 -->
+@forelse ($anomalies as $anomaly)
 <div class="p-3 bg-surface-container-low rounded-xl flex items-start gap-3">
-<div class="w-7 h-7 rounded-full bg-error-container text-error flex items-center justify-center shrink-0 mt-0.5">
-<span class="material-symbols-outlined text-[16px]">logout</span>
+<div class="w-7 h-7 rounded-full {{ $anomaly['tone'] }} flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">{{ $anomaly['icon'] }}</span>
 </div>
 <div class="flex flex-col flex-1 min-w-0">
-<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Oubli de badge départ (Veille)</span>
-<span class="font-body-sm text-body-sm text-on-surface-variant">Tarak Mansour • 17 Mars 2025</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">{{ $anomaly['title'] }}</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">{{ $anomaly['subtitle'] }}</span>
 <div class="flex items-center gap-2 mt-2">
-<button class="h-6 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" type="button">Régulariser 17:30</button>
-<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" type="button">Ignorer</button>
+<form method="POST" action="{{ route('admin.attendance.anomalies.'.$anomaly['action'], $anomaly['record']) }}">
+@csrf
+<button class="h-6 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" type="submit">{{ $anomaly['actionLabel'] }}</button>
+</form>
+@if ($anomaly['action'] !== 'ignore')
+<form method="POST" action="{{ route('admin.attendance.anomalies.ignore', $anomaly['record']) }}">
+@csrf
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" type="submit">Ignorer</button>
+</form>
+@endif
 </div>
 </div>
 </div>
-<!-- Item 2 -->
-<div class="p-3 bg-surface-container-low rounded-xl flex items-start gap-3">
-<div class="w-7 h-7 rounded-full bg-secondary-container text-secondary flex items-center justify-center shrink-0 mt-0.5">
-<span class="material-symbols-outlined text-[16px]">hourglass_top</span>
+@empty
+<div class="p-4 bg-surface-container-low rounded-xl flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary text-body-lg">task_alt</span>
+<span class="font-label-md text-label-md">Aucune anomalie à traiter pour cette date.</span>
 </div>
-<div class="flex flex-col flex-1 min-w-0">
-<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Sortie anticipée sans bon</span>
-<span class="font-body-sm text-body-sm text-on-surface-variant">Aymen Sellami • 18 Mars (11:45)</span>
-<div class="flex items-center gap-2 mt-2">
-<button class="h-6 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm" type="button">Joindre Bon de Sortie</button>
-</div>
-</div>
-</div>
+@endforelse
 </div>
 </div>
 <div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
-<span>Synchronisation passerelle : <b class="text-on-surface font-medium">11:02:15</b></span>
-<button class="flex items-center gap-1 text-primary hover:text-primary-container" type="button">
+<span>Synchronisation passerelle : <b class="text-on-surface font-medium">{{ now()->format('H:i:s') }}</b></span>
+<a class="flex items-center gap-1 text-primary hover:text-primary-container" href="{{ url()->full() }}">
 <span class="material-symbols-outlined text-[14px]">refresh</span>
           Actualiser
-        </button>
+        </a>
 </div>
 </div>
 </div>
@@ -657,57 +487,61 @@
 </button>
 </div>
 <!-- Modal Body Form -->
-<form class="space-y-4 pt-4" onsubmit="event.preventDefault(); document.getElementById('manualPunchModal').classList.add('opacity-0', 'pointer-events-none');">
+<form class="space-y-4 pt-4" id="punchForm" method="POST" action="{{ route('admin.attendance.punch') }}">
+@csrf
+@if ($errors->any())
+<div class="p-3 rounded-lg bg-error-container text-on-error-container font-label-sm text-label-sm">
+{{ $errors->first() }}
+</div>
+@endif
 <div>
-<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">Collaborateur concerné</label>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1" for="punchEmployee">Collaborateur concerné</label>
 <div class="relative">
-<select class="w-full h-10 pl-3 pr-8 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container">
-<option value="1">Mohamed Ben Salem (MAT-0419)</option>
-<option value="2">Yasmine Trabelsi (MAT-0582)</option>
-<option value="3">Sonia Mezghani (MAT-0220)</option>
-<option value="4">Mehdi Zghal (MAT-0312)</option>
+<select class="w-full h-10 pl-3 pr-8 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container" id="punchEmployee" name="employee_id" required>
+@foreach ($employees as $employee)
+<option value="{{ $employee->id }}" @selected($employeeId === $employee->id)>{{ $employee->name }} (MAT-{{ str_pad((string) $employee->id, 4, '0', STR_PAD_LEFT) }})</option>
+@endforeach
 </select>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-3">
 <div>
-<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">Date</label>
-<input class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" type="date" value="2025-03-18"/>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1" for="punchDate">Date</label>
+<input class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" id="punchDate" name="date" type="date" value="{{ old('date', $selectedDate->toDateString()) }}" required/>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">Heure de pointage</label>
-<input class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" type="time" value="08:30"/>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1" for="punchTime">Heure de pointage</label>
+<input class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" id="punchTime" name="time" type="time" value="{{ old('time', '08:30') }}" required/>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-3">
 <div>
-<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">Sens de flux</label>
-<select class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container">
-<option value="in">Entrée / Arrivée</option>
-<option value="out">Sortie / Départ</option>
-<option value="pause_in">Sortie Pause Déjeuner</option>
-<option value="pause_out">Retour Pause Déjeuner</option>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1" for="punchDirection">Sens de flux</label>
+<select class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" id="punchDirection" name="direction">
+<option value="in" @selected(old('direction') === 'in')>Entrée / Arrivée</option>
+<option value="out" @selected(old('direction') === 'out')>Sortie / Départ</option>
+<option value="pause_in" @selected(old('direction') === 'pause_in')>Sortie Pause Déjeuner</option>
+<option value="pause_out" @selected(old('direction') === 'pause_out')>Retour Pause Déjeuner</option>
 </select>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">Motif de dérogation</label>
-<select class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container">
-<option value="forgot">Oubli de badge physique</option>
-<option value="failure">Panne terminal biométrique</option>
-<option value="mission">Mission externe / Chantier</option>
-<option value="other">Autre justification autorisée</option>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1" for="punchMotif">Motif de dérogation</label>
+<select class="w-full h-10 px-3 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container" id="punchMotif" name="motif">
+@foreach ($motifs as $value => $label)
+<option value="{{ $value }}" @selected(old('motif') === $value)>{{ $label }}</option>
+@endforeach
 </select>
 </div>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1">Commentaire de validation</label>
-<textarea class="w-full p-2.5 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" placeholder="Ex: Ordre de mission validé par la Direction Générale..." rows="2"></textarea>
+<label class="block font-label-md text-label-md text-on-surface font-semibold mb-1" for="punchComment">Commentaire de validation</label>
+<textarea class="w-full p-2.5 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container" id="punchComment" name="comment" placeholder="Ex: Ordre de mission validé par la Direction Générale..." rows="2">{{ old('comment') }}</textarea>
 </div>
 <div class="p-3 bg-surface-container-low rounded-lg flex items-start gap-2.5">
 <span class="material-symbols-outlined text-primary text-body-md mt-0.5">verified</span>
 <p class="font-body-sm text-body-sm text-on-surface-variant">
-            Ce pointage sera tracé au registre d'audit avec la signature électronique de l'utilisateur connecté (Amel Ben Salah).
+            Ce pointage sera tracé au registre d'audit avec la signature électronique de l'utilisateur connecté ({{ optional(auth()->user())->name ?? 'Administrateur RH' }}).
           </p>
 </div>
 <!-- Footer Actions -->
@@ -723,7 +557,7 @@
 </div>
 </div>
 <script>
-    // Client-side interactions for Modal and Search Filter
+    // Client-side interactions for Modal, filters and prefill
     (function() {
       const modal = document.getElementById('manualPunchModal');
       const modalCard = document.getElementById('modalCard');
@@ -753,19 +587,47 @@
       if (closeBtn) closeBtn.addEventListener('click', hideModal);
       if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
 
-      // Search Filtering on table rows
-      const searchInput = document.getElementById('searchInput');
-      const tableRows = document.querySelectorAll('#attendanceTable tbody tr');
+      document.querySelectorAll('.js-edit-punch').forEach(function(button) {
+        button.addEventListener('click', function() {
+          const employeeSelect = document.getElementById('punchEmployee');
+          const dateInput = document.getElementById('punchDate');
+          const timeInput = document.getElementById('punchTime');
+          const directionSelect = document.getElementById('punchDirection');
 
-      if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-          const query = e.target.value.toLowerCase().trim();
-          tableRows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(query) ? '' : 'none';
-          });
+          if (employeeSelect && button.dataset.employee) employeeSelect.value = button.dataset.employee;
+          if (dateInput && button.dataset.date) dateInput.value = button.dataset.date;
+          if (timeInput && button.dataset.time) timeInput.value = button.dataset.time;
+          if (directionSelect) directionSelect.value = button.dataset.direction || 'in';
+
+          showModal();
+        });
+      });
+
+      @if ($errors->any())
+      showModal();
+      @endif
+
+      const filterForm = document.getElementById('attendanceFilterForm');
+      const searchInput = document.getElementById('searchInput');
+      let searchTimer;
+
+      if (filterForm && searchInput) {
+        searchInput.addEventListener('input', function() {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(function() { filterForm.requestSubmit(); }, 500);
+        });
+        searchInput.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            clearTimeout(searchTimer);
+            filterForm.requestSubmit();
+          }
         });
       }
+
+      document.querySelectorAll('[data-flash-toast]').forEach(function(toast) {
+        setTimeout(function() { toast.remove(); }, 6000);
+      });
     })();
   </script>
 </div>
