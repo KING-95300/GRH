@@ -11,7 +11,7 @@ test('email verification screen can be rendered', function () {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->get('/verify-email');
+    $response = $this->withCookies(tokenCookiesFor($user))->get('/verify-email');
 
     $response->assertStatus(200);
 });
@@ -29,7 +29,7 @@ test('email can be verified', function () {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $response = $this->actingAs($user)->get($verificationUrl);
+    $response = $this->withCookies(tokenCookiesFor($user))->get($verificationUrl);
 
     Event::assertDispatched(Verified::class);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
@@ -47,7 +47,7 @@ test('email is not verified with invalid hash', function () {
         ['id' => $user->id, 'hash' => sha1('wrong-email')]
     );
 
-    $this->actingAs($user)->get($verificationUrl);
+    $this->withCookies(tokenCookiesFor($user))->get($verificationUrl);
 
     expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
 });

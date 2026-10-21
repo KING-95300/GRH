@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use App\Services\TokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -42,7 +44,12 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function tokenCookiesFor(User $user, bool $remember = false): array
 {
-    // ..
+    $tokens = app(TokenService::class)->issueTokens($user, $remember);
+
+    return [
+        'access_token' => $tokens['access_token'],
+        'refresh_token' => $tokens['refresh_token'],
+    ];
 }

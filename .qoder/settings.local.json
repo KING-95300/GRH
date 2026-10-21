@@ -90,7 +90,12 @@
       "Bash(cd \"C:/Users/skonb/AppData/Local/Temp/hrm_extract\" && grep -n \"Mohamed Ben Salem\\\\|MAT-0418\\\\|m.bensalem\\\\|@\" profile_main.html | cut -c1-240)",
       "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && php artisan view:clear && php artisan route:list --path=profile)",
       "Bash(curl:*)",
-      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && php artisan tinker --execute=\"App\\\\Models\\\\User::query\\(\\)->get\\(['id','name','email','role']\\)->each\\(fn\\(\\\\$u\\) => print\\(\\\\$u->id.' | '.\\\\$u->name.' | '.\\\\$u->email.' | '.\\\\$u->role.PHP_EOL\\)\\);\")"
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && php artisan tinker --execute=\"App\\\\Models\\\\User::query\\(\\)->get\\(['id','name','email','role']\\)->each\\(fn\\(\\\\$u\\) => print\\(\\\\$u->id.' | '.\\\\$u->name.' | '.\\\\$u->email.' | '.\\\\$u->role.PHP_EOL\\)\\);\")",
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && php artisan tinker --execute=\"App\\\\Models\\\\User::query\\(\\)->get\\(['id','email','email_verified_at','role']\\)->each\\(fn\\(\\\\$u\\) => print\\(\\\\$u->id.' | '.\\\\$u->email.' | '.\\(\\\\$u->email_verified_at ?: 'NULL'\\).' | '.\\\\$u->role.PHP_EOL\\)\\);\")",
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && grep -n \"function with.*Cookie\\\\|unencryptedCookies\\\\|disableCookieEncryption\" vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php | head -30)",
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && cat .env | grep -E \"^\\(APP_ENV|APP_KEY|DB_\\)\" | sed 's/=.*KEY.*/=<redacted>/')",
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && sed -n '660,690p' vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php && grep -n \"unencrypted\" vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php | head -20)",
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && sed -n '210,265p' vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php)"
     ]
   }
 }

@@ -112,4 +112,24 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Token Authentication
+    |--------------------------------------------------------------------------
+    |
+    | Access and refresh tokens are stored in HttpOnly cookies. Access tokens
+    | are short-lived signed JWTs; refresh tokens are opaque, hashed in the
+    | database and rotated on every use.
+    |
+    */
+
+    'tokens' => [
+        'secret' => env('JWT_SECRET') ?: env('APP_KEY'),
+        'access_ttl' => (int) env('JWT_ACCESS_TTL', 15),
+        'refresh_ttl' => (int) env('JWT_REFRESH_TTL', 60 * 24 * 7),
+        'remember_ttl' => (int) env('JWT_REFRESH_REMEMBER_TTL', 60 * 24 * 30),
+        'access_cookie' => 'access_token',
+        'refresh_cookie' => 'refresh_token',
+    ],
+
 ];

@@ -4,7 +4,7 @@
 
 This project is a web-based **Human Resource Management (HRM) module** built with **Laravel**. It provides a back-office for managing a company's employees and their leave (congés) requests.
 
-The application is server-rendered with **Blade** templates and styled with **Tailwind CSS** (compiled through Vite). Authentication is provided by **Laravel Breeze**, so only registered users can access the management area.
+The application is server-rendered with **Blade** templates and styled with **Tailwind CSS** (compiled through Vite). Authentication is provided by **Laravel Breeze** scaffolding, backed by a custom **access-token / refresh-token** system: both tokens are delivered in **HttpOnly cookies** (never localStorage) and are refreshed transparently on the server. Only authenticated users can access the management area.
 
 The module covers two main business domains:
 
@@ -21,7 +21,7 @@ The public landing page of **HRM Pro** (a Stitch design export) is served at the
 |---|---|
 | Language | PHP ^8.1 |
 | Framework | Laravel 10 |
-| Authentication | Laravel Breeze 1.29, Laravel Sanctum 3.2 |
+| Authentication | Laravel Breeze 1.29 scaffolding, custom HS256 access tokens + rotating refresh tokens in HttpOnly cookies, Laravel Sanctum 3.2 |
 | Templating | Blade |
 | Styling | Tailwind CSS 3, `@tailwindcss/forms` |
 | Front-end tooling | Vite 4, Alpine.js 3, Axios |
@@ -38,11 +38,13 @@ The public landing page of **HRM Pro** (a Stitch design export) is served at the
 - Registration, login, and logout
 - Password reset and password confirmation
 - Email verification flow
-- Profile management (update name/email, change password, delete account)
+- Profile management (update name/email, change password, delete account) on the **Mon Profil & Carrière** Stitch page
 - Responsive navigation with user dropdown
 - Login and registration screens use the **HRM Pro Stitch design**: a two-column layout with a branded showcase panel, tab switcher, password visibility toggle, and Laravel validation feedback
+- **Token authentication**: a short-lived HS256 access token and a rotating opaque refresh token, both delivered in `HttpOnly` cookies (never localStorage)
+- Silent token renewal, refresh-token rotation, and revocation on logout or account deletion
 
-Business logic is provided by the standard Breeze scaffolding (`routes/auth.php`, `app/Http/Controllers/Auth/`); the presentation layer is the shared `resources/views/components/auth-shell.blade.php` component.
+Business logic is provided by the standard Breeze scaffolding (`routes/auth.php`, `app/Http/Controllers/Auth/`) extended with `TokenService`, the `token.auth` middleware, and the `RefreshToken` model; the presentation layer is the shared `resources/views/components/auth-shell.blade.php` component.
 
 ### Employee Management
 
@@ -112,9 +114,16 @@ The authenticated area shares one layout (`resources/views/components/collaborat
 - Document preview and download triggers
 - One-click HR document generation (work certificate, salary attestation, situation declaration)
 
+**Mon Profil & Carrière** (`/profile`):
+
+- Stitch "settings profil" design inside the collaborator shell: personalized identity card with initials avatar, name, matricule, e-mail, contract badge, and career summary
+- Career trajectory, OKRs, annual evaluation summary, skills matrix, certifications, and Tunisian labour-code framework sections
+- "Mettre à jour mes informations" modal wired to the Breeze profile, password, and account-deletion forms, with inline validation and toast confirmations
+- "Demander un Point Carrière" action for requesting a career review
+
 ### Admin Portal
 
-Users with the `admin` role are redirected to `/admin/dashboard` after login and land on the **HRM Pro Admin Dashboard** Stitch design. The area is protected by the `auth`, `verified`, and `admin` middleware.
+Users with the `admin` role are redirected to `/admin/dashboard` after login and land on the **HRM Pro Admin Dashboard** Stitch design. The area is protected by the `token.auth`, `verified`, and `admin` middleware.
 
 - **Admin account:** `admin@hometech.com` / `hometech123`
 - Sidebar links to Dashboard, Employees, Leaves, Attendance, Departments, Payroll, Recruitment, Documents, Reports, and Settings, each with an active state
@@ -146,20 +155,26 @@ A `Student` model, migration, and resource controller exist as scaffolding, but 
 
 ```
 app/
-├── Http/Controllers/
-│   ├── Auth/                  # Breeze authentication controllers
-│   ├── EmployeeController.php # Employee CRUD
-│   ├── CongesController.php   # Leave CRUD
-│   ├── ProfileController.php  # User profile
-│   └── StudentController.php  # Unused scaffold
-└── Models/
-    ├── Employee.php
-    ├── Conges.php
-    ├── Student.php
-    └── User.php
+├── Http/
+│   ├── Controllers/
+│   │   ├── Auth/                  # Breeze authentication controllers
+│   │   ├── EmployeeController.php # Employee CRUD
+│   │   ├── CongesController.php   # Leave CRUD
+│   │   ├── ProfileController.php  # User profile
+│   │   └── StudentController.php  # Unused scaffold
+│   └── Middleware/
+│       └── AuthenticateWithTokens.php # Cookie token auth + silent refresh
+├── Models/
+│   ├── Employee.php
+│   ├── Conges.php
+│   ├── RefreshToken.php           # Hashed refresh tokens
+│   ├── Student.php
+│   └── User.php
+└── Services/
+    └── TokenService.php           # JWT issuance/validation, rotation, cookies
 
 database/
-├── migrations/                # users, employees, conges, students, auth/support tables
+├── migrations/                # users, refresh_tokens, employees, conges, students, auth/support tables
 ├── factories/
 └── seeders/DatabaseSeeder.php # Empty (no demo data by default)
 
@@ -221,6 +236,17 @@ routes/
 | `reason` | text | Required |
 | `created_at`, `updated_at` | timestamps | |
 
+### `refresh_tokens`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | bigint, PK | |
+| `user_id` | bigint, FK | References `users.id`, cascade on delete |
+| `token_hash` | string(64), unique | SHA-256 hash of the opaque refresh token |
+| `expires_at` | timestamp | Token expiry |
+| `revoked_at` | timestamp, nullable | Set when rotated, logged out, or account deleted |
+| `created_at`, `updated_at` | timestamps | |
+
 ### Other tables
 
 - `users` (`name`, `email`, `role`, `password`, …), `password_reset_tokens` — authentication and role-based access (`role` defaults to `collaborateur`)
@@ -235,29 +261,42 @@ routes/
 | Method | URI | Handler | Middleware |
 |---|---|---|---|
 | GET | `/` | HRM Pro landing page | — |
-| GET | `/dashboard` | Dashboard | `auth`, `verified` |
-| GET | `/mes-conges` | Mes Congés & Absences | `auth`, `verified` |
-| GET | `/mes-fiches-de-paie` | Mes Fiches de Paie | `auth`, `verified` |
-| GET | `/mon-pointage` | Mon Pointage | `auth`, `verified` |
-| GET | `/mes-documents` | Mes Documents & Profil | `auth`, `verified` |
-| GET | `/admin/dashboard` | Admin HR dashboard | `auth`, `verified`, `admin` |
-| GET | `/admin/employees` | Admin employees | `auth`, `verified`, `admin` |
-| GET | `/admin/leaves` | Admin leaves | `auth`, `verified`, `admin` |
-| GET | `/admin/attendance` | Admin attendance | `auth`, `verified`, `admin` |
-| GET | `/admin/departments` | Admin departments | `auth`, `verified`, `admin` |
-| GET | `/admin/payroll` | Admin payroll | `auth`, `verified`, `admin` |
-| GET | `/admin/recruitment` | Admin recruitment | `auth`, `verified`, `admin` |
-| GET | `/admin/documents` | Admin documents | `auth`, `verified`, `admin` |
-| GET | `/admin/reports` | Admin reports | `auth`, `verified`, `admin` |
-| GET | `/admin/settings` | Admin settings | `auth`, `verified`, `admin` |
-| GET/PATCH/DELETE | `/profile` | `ProfileController` | `auth` |
+| GET | `/dashboard` | Dashboard | `token.auth`, `verified` |
+| GET | `/mes-conges` | Mes Congés & Absences | `token.auth`, `verified` |
+| GET | `/mes-fiches-de-paie` | Mes Fiches de Paie | `token.auth`, `verified` |
+| GET | `/mon-pointage` | Mon Pointage | `token.auth`, `verified` |
+| GET | `/mes-documents` | Mes Documents & Profil | `token.auth`, `verified` |
+| GET | `/admin/dashboard` | Admin HR dashboard | `token.auth`, `verified`, `admin` |
+| GET | `/admin/employees` | Admin employees | `token.auth`, `verified`, `admin` |
+| GET | `/admin/leaves` | Admin leaves | `token.auth`, `verified`, `admin` |
+| GET | `/admin/attendance` | Admin attendance | `token.auth`, `verified`, `admin` |
+| GET | `/admin/departments` | Admin departments | `token.auth`, `verified`, `admin` |
+| GET | `/admin/payroll` | Admin payroll | `token.auth`, `verified`, `admin` |
+| GET | `/admin/recruitment` | Admin recruitment | `token.auth`, `verified`, `admin` |
+| GET | `/admin/documents` | Admin documents | `token.auth`, `verified`, `admin` |
+| GET | `/admin/reports` | Admin reports | `token.auth`, `verified`, `admin` |
+| GET | `/admin/settings` | Admin settings | `token.auth`, `verified`, `admin` |
+| GET/PATCH/DELETE | `/profile` | `ProfileController` | `token.auth` |
 | GET/POST | `/employees`, `/employees/create` | `EmployeeController` | — |
 | GET/PUT/DELETE | `/employees/{employee}` | `EmployeeController` | — |
 | GET/POST | `/conges`, `/conges/create` | `CongesController` | — |
 | GET/PUT/DELETE | `/conges/{conge}` | `CongesController` | — |
-| * | `/login`, `/register`, `/forgot-password`, etc. | Breeze auth controllers | `guest` / `auth` |
+| * | `/login`, `/register`, `/forgot-password`, etc. | Breeze auth controllers | `guest` / `token.auth` |
 
-> The employee and leave resource routes are registered outside the `auth` middleware group, although their views use the authenticated app layout.
+> The employee and leave resource routes are registered outside the `token.auth` middleware group, although their views use the authenticated app layout.
+
+---
+
+## Authentication (Access & Refresh Tokens)
+
+Authentication is cookie-based and stateless on the server:
+
+- **Access token** — HS256 JWT signed with `JWT_SECRET` (falling back to `APP_KEY`), carrying `sub`, `email`, `role`, `type=access`, `iat`, `exp`, and `jti`. Lifetime: **15 minutes** (`JWT_ACCESS_TTL`).
+- **Refresh token** — 80-character opaque random string. Only its SHA-256 hash is stored in `refresh_tokens`. Lifetime: **7 days** (`JWT_REFRESH_TTL`), or **30 days** when "remember me" is checked (`JWT_REFRESH_REMEMBER_TTL`).
+- **Cookies** — `access_token` and `refresh_token`, both `HttpOnly`, `SameSite=Lax`, path `/`, and `Secure` in production. Tokens are never exposed to JavaScript or written to localStorage/sessionStorage.
+- **Middleware** — `token.auth` (`AuthenticateWithTokens`) validates the access cookie and sets the user for the request. If the access token is missing or expired but the refresh cookie is valid, it rotates the refresh token, issues a new cookie pair preserving the remaining lifetime, and continues the request transparently.
+- **Rotation and revocation** — each refresh revokes the presented token; logout and account deletion revoke the current refresh token and expire both cookies.
+- **Session cookie** — the Laravel session is kept only for CSRF protection and flash messages; it no longer stores the authenticated user.
 
 ---
 
@@ -281,12 +320,17 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
+#    Optional token settings (JWT_SECRET defaults to APP_KEY)
+#    JWT_ACCESS_TTL=15
+#    JWT_REFRESH_TTL=10080
+#    JWT_REFRESH_REMEMBER_TTL=43200
+
 # 3. Create the database and set credentials in .env
 #    DB_DATABASE=laravel
 #    DB_USERNAME=root
 #    DB_PASSWORD=
 
-# 4. Run migrations
+# 4. Run migrations (creates users, refresh_tokens, employees, conges, ...)
 php artisan migrate
 
 # 5. Build front-end assets (or use `npm run dev` while developing)
@@ -326,7 +370,7 @@ These are current code-level issues, not setup problems:
 
 1. **Employee creation fails** — The create form submits only `name`, `email`, `mobile`, and `position`, while the `employees` table has six additional non-nullable columns (`seniority`, `status`, `bank_account`, `cin`, `work_mobile`, `cnss_number`). Submitting the form raises MySQL error `1364: Field '...' doesn't have a default value`. The same fields are also missing from the edit form.
 2. **Leave requests reference employees by name** — `conges.employee_name` stores a string. Renaming an employee does not update their leave records. The edit form posts `employee_id`, which is neither a table column nor a fillable attribute, so the employee cannot actually be changed on update.
-3. **Guest access to management pages** — The `employees` and `conges` routes are not protected by the `auth` middleware, but the shared layout calls `Auth::user()->name`. A guest reaching these URLs triggers an error; users must be logged in.
+3. **Guest access to management pages** — The `employees` and `conges` routes are not protected by the `token.auth` middleware, but the shared layout calls `Auth::user()->name`. A guest reaching these URLs triggers an error; users must be logged in.
 4. **Incomplete student module** — The model/migration/controller scaffold is present but unused.
 5. **No demo data** — `DatabaseSeeder` is empty; the employee and leave lists start empty.
 6. **Collaborator pages are presentation-only** — The dashboard, leave, payslip, attendance, and document pages reuse Stitch demo data. Identity fields come from the logged-in user, but leave requests, payslips, punches, and documents are not yet persisted to the database.
