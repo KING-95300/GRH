@@ -4,6 +4,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CongesController;
+use App\Http\Controllers\RecruitmentController;
+use App\Http\Controllers\DocumentsController;
+use App\Http\Controllers\ReportsController;
 
 
 
@@ -48,9 +51,30 @@ Route::middleware(['token.auth', 'verified', 'admin'])->prefix('admin')->name('a
     Route::view('/attendance', 'admin.attendance')->name('attendance');
     Route::view('/departments', 'admin.departments')->name('departments');
     Route::view('/payroll', 'admin.payroll')->name('payroll');
-    Route::view('/recruitment', 'admin.recruitment')->name('recruitment');
-    Route::view('/documents', 'admin.documents')->name('documents');
-    Route::view('/reports', 'admin.reports')->name('reports');
+    Route::get('/recruitment', [RecruitmentController::class, 'index'])->name('recruitment');
+    Route::post('/recruitment/candidates', [RecruitmentController::class, 'storeCandidate'])->name('recruitment.candidates.store');
+    Route::put('/recruitment/candidates/{candidate}', [RecruitmentController::class, 'updateCandidate'])->name('recruitment.candidates.update');
+    Route::delete('/recruitment/candidates/{candidate}', [RecruitmentController::class, 'destroyCandidate'])->name('recruitment.candidates.destroy');
+    Route::patch('/recruitment/candidates/{candidate}/stage', [RecruitmentController::class, 'moveStage'])->name('recruitment.candidates.stage');
+    Route::post('/recruitment/candidates/{candidate}/interviews', [RecruitmentController::class, 'storeInterview'])->name('recruitment.candidates.interviews.store');
+    Route::delete('/recruitment/interviews/{interview}', [RecruitmentController::class, 'destroyInterview'])->name('recruitment.interviews.destroy');
+    Route::post('/recruitment/offers', [RecruitmentController::class, 'storeOffer'])->name('recruitment.offers.store');
+    Route::put('/recruitment/offers/{jobOffer}', [RecruitmentController::class, 'updateOffer'])->name('recruitment.offers.update');
+    Route::delete('/recruitment/offers/{jobOffer}', [RecruitmentController::class, 'destroyOffer'])->name('recruitment.offers.destroy');
+
+    Route::get('/documents', [DocumentsController::class, 'index'])->name('documents');
+    Route::post('/documents', [DocumentsController::class, 'store'])->name('documents.store');
+    Route::post('/documents/zip', [DocumentsController::class, 'zipSelection'])->name('documents.zip');
+    Route::get('/documents/{document}/download', [DocumentsController::class, 'download'])->name('documents.download');
+    Route::put('/documents/{document}', [DocumentsController::class, 'update'])->name('documents.update');
+    Route::delete('/documents/{document}', [DocumentsController::class, 'destroy'])->name('documents.destroy');
+
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
+    Route::get('/reports/export/{dataset}', [ReportsController::class, 'exportCsv'])->name('reports.export');
+    Route::post('/reports/schedules', [ReportsController::class, 'storeSchedule'])->name('reports.schedules.store');
+    Route::put('/reports/schedules/{schedule}', [ReportsController::class, 'updateSchedule'])->name('reports.schedules.update');
+    Route::delete('/reports/schedules/{schedule}', [ReportsController::class, 'destroySchedule'])->name('reports.schedules.destroy');
+    Route::post('/reports/schedules/{schedule}/send', [ReportsController::class, 'sendNow'])->name('reports.schedules.send');
     Route::view('/settings', 'admin.settings')->name('settings');
 });
 
