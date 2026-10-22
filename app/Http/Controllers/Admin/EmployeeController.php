@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Candidate;
 use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class EmployeeController extends Controller
 
         $editEmployee = $request->filled('edit') ? Employee::find($request->integer('edit')) : null;
         $viewEmployee = $request->filled('view') ? Employee::find($request->integer('view')) : null;
+        $onboardValues = $this->onboardValues($request);
 
         $totalEmployees = Employee::count();
         $activeProfiles = Employee::where('status', '!=', 'inactif')->count();
@@ -41,6 +43,7 @@ class EmployeeController extends Controller
             'filters',
             'editEmployee',
             'viewEmployee',
+            'onboardValues',
             'totalEmployees',
             'activeProfiles',
             'probationCount',
@@ -60,6 +63,12 @@ class EmployeeController extends Controller
         }
 
         $employee = Employee::create($payload);
+
+        if ($request->filled('candidate_id')) {
+            Candidate::where('id', $request->integer('candidate_id'))
+                ->whereNull('onboarded_at')
+                ->update(['onboarded_at' => now()]);
+        }
 
         return redirect()
             ->route('admin.employees')
@@ -179,6 +188,44 @@ class EmployeeController extends Controller
         );
     }
 
+    private function onboardValues(Request $request): ?array
+    {
+        if (! $request->filled('onboard')) {
+            return null;
+        }
+
+        $candidate = Candidate::find($request->integer('onboard'));
+
+        if (! $candidate || $candidate->stage !== 'hired' || $candidate->onboarded_at) {
+            return null;
+        }
+
+        $nameParts = preg_split('/\s+/', trim($candidate->name)) ?: [];
+        $departmentMap = [
+            'Ingénierie & R&D' => 'it',
+            'Produit & Design' => 'produit',
+            'Commercial & Marketing' => 'commerce',
+            'Finance & Opérations RH' => 'finance',
+        ];
+        $contractType = in_array($candidate->contract_type_target, array_keys(Employee::CONTRACT_TYPES), true)
+            ? $candidate->contract_type_target
+            : 'CDI';
+
+        return [
+            'candidate_id' => $candidate->id,
+            'candidate_name' => $candidate->name,
+            'firstname' => $nameParts[0] ?? '',
+            'lastname' => count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : '',
+            'email' => $candidate->email ?? '',
+            'mobile' => $candidate->phone ?? '',
+            'position' => $candidate->position,
+            'department' => $departmentMap[$candidate->jobOffer?->department] ?? 'it',
+            'contract_type' => $contractType,
+            'hire_date' => $candidate->hired_at?->format('Y-m-d'),
+            'status' => 'essai',
+        ];
+    }
+
     private function filters(Request $request): array
     {
         return [
@@ -249,6 +296,7 @@ class EmployeeController extends Controller
             'employee_note' => ['nullable', 'string', 'max:2000'],
             'cin_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'remove_cin_file' => ['nullable', 'boolean'],
+            'candidate_id' => ['nullable', 'integer', 'exists:candidates,id'],
         ]);
 
         $hireDate = Carbon::parse($validated['hire_date']);

@@ -40,11 +40,13 @@ class Candidate extends Model
         'contract_type_target',
         'stage',
         'hired_at',
+        'onboarded_at',
         'notes',
     ];
 
     protected $casts = [
         'hired_at' => 'date',
+        'onboarded_at' => 'datetime',
         'salary_claim' => 'decimal:2',
     ];
 

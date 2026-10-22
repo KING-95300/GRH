@@ -111,10 +111,17 @@
     <div class="flex items-center justify-between pt-space-xs border-t border-surface-container">
         <span class="font-label-sm text-label-sm text-on-surface-variant">Dossier CNSS généré</span>
         <div class="flex items-center gap-1">
-            <button class="px-2 py-1 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold hover:bg-primary transition-colors flex items-center gap-1" type="button">
+            @if ($candidate->onboarded_at)
+            <span class="px-2 py-1 rounded bg-tertiary-fixed/40 text-tertiary font-label-sm text-label-sm font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-body-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                <span>Onboardé</span>
+            </span>
+            @else
+            <a class="px-2 py-1 rounded bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold hover:bg-primary transition-colors flex items-center gap-1" href="{{ route('admin.employees', ['onboard' => $candidate->id]) }}" title="Créer la fiche collaborateur">
                 <span>Onboarding</span>
                 <span class="material-symbols-outlined text-body-sm">arrow_forward</span>
-            </button>
+            </a>
+            @endif
             <button class="p-1 text-on-surface-variant hover:text-primary transition-colors" type="button" title="Modifier" data-json="{{ json_encode($candidate->only(['id', 'name', 'email', 'phone', 'position', 'job_offer_id', 'avatar_url', 'match_percentage', 'experience_years', 'skills', 'source', 'salary_claim', 'availability', 'contract_type_target', 'stage', 'notes'])) }}" onclick="openCandidateModal(this)">
                 <span class="material-symbols-outlined text-body-md">edit</span>
             </button>
