@@ -29,6 +29,12 @@
     $defaultFirstname = $editNameParts[0] ?? '';
     $defaultLastname = count($editNameParts) > 1 ? implode(' ', array_slice($editNameParts, 1)) : '';
     $defaultMobile = preg_replace('/^\+216\s*/', '', (string) old('mobile', $editEmployee?->mobile ?? ''));
+    $onboardValue = fn (string $key, $fallback = '') => old($key, $onboardValues[$key] ?? $fallback);
+    if ($onboardValues) {
+        $defaultFirstname = $onboardValue('firstname');
+        $defaultLastname = $onboardValue('lastname');
+        $defaultMobile = preg_replace('/^\+216\s*/', '', (string) $onboardValue('mobile'));
+    }
     $defaultWorkMobile = preg_replace('/^\+216\s*/', '', (string) old('work_mobile', $editEmployee?->work_mobile ?? ''));
     $defaultCnss = old('cnss_number', $editEmployee && $editEmployee->cnss_number !== 'Non renseigné' ? $editEmployee->cnss_number : '');
     $defaultBank = old('bank_account', $editEmployee && $editEmployee->bank_account !== 'Non renseigné' ? $editEmployee->bank_account : '');
@@ -46,7 +52,7 @@
             break;
         }
     }
-    $openDrawer = $isEditing || $errors->any();
+    $openDrawer = $isEditing || $errors->any() || $onboardValues !== null;
     $openView = $viewEmployee !== null && ! $openDrawer;
     $initialStep = $errors->any() ? $firstErrorStep : 1;
     $stepActiveClass = 'bg-primary-container text-on-primary shadow-xs';
@@ -89,10 +95,6 @@
 <span class="material-symbols-outlined text-body-lg text-on-surface-variant">file_download</span>
 <span>Exporter CSV</span>
 </a>
-<button class="h-10 px-space-lg rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg flex items-center gap-space-xs transition-all transform active:scale-95" id="open-modal-btn" type="button">
-<span class="material-symbols-outlined text-body-md">person_add</span>
-<span>Nouveau Collaborateur</span>
-</button>
 </div>
 </div>
 <!-- Quick Stats Cards Strip -->
@@ -547,6 +549,16 @@ Date non renseignée
 @if ($isEditing)
 @method('PUT')
 @endif
+@if ($onboardValues)
+<input type="hidden" name="candidate_id" value="{{ old('candidate_id', $onboardValues['candidate_id']) }}"/>
+<div class="p-space-md rounded-xl bg-tertiary-fixed/15 ring-1 ring-tertiary/20 flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-body-lg shrink-0 mt-0.5">how_to_reg</span>
+<div class="flex flex-col text-on-surface">
+<span class="font-label-md text-label-md font-semibold">Onboarding depuis le recrutement</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Candidat : <strong>{{ $onboardValues['candidate_name'] }}</strong>. Les champs sont pré-remplis — complétez la CIN et la date de naissance, puis enregistrez la fiche collaborateur.</span>
+</div>
+</div>
+@endif
 <!-- Step 1: Personal Information -->
 <div class="space-y-space-md js-step-panel {{ $initialStep === 1 ? '' : 'hidden' }}" data-step-panel="1">
 <!-- Info Banner: Legal Compliance -->
@@ -592,7 +604,7 @@ Date non renseignée
 <label class="font-label-md text-label-md text-on-surface font-medium" for="emp-email">Email Personnel / Pro <span class="text-error">*</span></label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-md">mail</span>
-<input class="w-full h-10 pl-10 pr-3 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-email" name="email" placeholder="a.bouazizi@carthagetech.tn" required="" type="email" value="{{ old('email', $editEmployee?->email) }}"/>
+<input class="w-full h-10 pl-10 pr-3 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-email" name="email" placeholder="a.bouazizi@carthagetech.tn" required="" type="email" value="{{ $onboardValue('email', $editEmployee?->email) }}"/>
 </div>
 @error('email')<span class="font-label-sm text-label-sm text-error">{{ $message }}</span>@enderror
 </div>
@@ -676,7 +688,7 @@ Date non renseignée
 </div>
 <div class="flex flex-col gap-space-xs">
 <label class="font-label-md text-label-md text-on-surface font-medium" for="emp-position">Intitulé du poste <span class="text-error">*</span></label>
-<input class="h-10 px-3 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-position" name="position" placeholder="Ex: Ingénieur Logiciel" required="" type="text" value="{{ old('position', $editEmployee?->position) }}"/>
+<input class="h-10 px-3 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-position" name="position" placeholder="Ex: Ingénieur Logiciel" required="" type="text" value="{{ $onboardValue('position', $editEmployee?->position) }}"/>
 @error('position')<span class="font-label-sm text-label-sm text-error">{{ $message }}</span>@enderror
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
@@ -685,7 +697,7 @@ Date non renseignée
 <div class="relative">
 <select class="w-full appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-department" name="department" required="">
 @foreach (\App\Models\Employee::DEPARTMENTS as $value => $label)
-<option value="{{ $value }}" @selected(old('department', $editEmployee?->department ?? 'it') === $value)>{{ $label }}</option>
+<option value="{{ $value }}" @selected($onboardValue('department', $editEmployee?->department ?? 'it') === $value)>{{ $label }}</option>
 @endforeach
 </select>
 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-body-md">expand_more</span>
@@ -697,7 +709,7 @@ Date non renseignée
 <div class="relative">
 <select class="w-full appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-contract" name="contract_type" required="">
 @foreach (\App\Models\Employee::CONTRACT_TYPES as $value => $label)
-<option value="{{ $value }}" @selected(old('contract_type', $editEmployee?->contract_type ?? 'CDI') === $value)>{{ $label }}</option>
+<option value="{{ $value }}" @selected($onboardValue('contract_type', $editEmployee?->contract_type ?? 'CDI') === $value)>{{ $label }}</option>
 @endforeach
 </select>
 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-body-md">expand_more</span>
@@ -708,7 +720,7 @@ Date non renseignée
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
 <div class="flex flex-col gap-space-xs">
 <label class="font-label-md text-label-md text-on-surface font-medium" for="emp-hire-date">Date d'embauche <span class="text-error">*</span></label>
-<input class="h-10 px-3 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-hire-date" name="hire_date" required="" type="date" value="{{ old('hire_date', $editEmployee?->hire_date?->format('Y-m-d')) }}"/>
+<input class="h-10 px-3 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-hire-date" name="hire_date" required="" type="date" value="{{ $onboardValue('hire_date', $editEmployee?->hire_date?->format('Y-m-d')) }}"/>
 @error('hire_date')<span class="font-label-sm text-label-sm text-error">{{ $message }}</span>@enderror
 </div>
 <div class="flex flex-col gap-space-xs">
@@ -716,7 +728,7 @@ Date non renseignée
 <div class="relative">
 <select class="w-full appearance-none h-10 pl-3 pr-8 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none ring-1 ring-outline-variant focus:ring-2 focus:ring-primary transition-all" id="emp-status" name="status" required="">
 @foreach (\App\Models\Employee::STATUSES as $value => $label)
-<option value="{{ $value }}" @selected(old('status', $editEmployee?->status ?? 'actif') === $value)>{{ $label }}</option>
+<option value="{{ $value }}" @selected($onboardValue('status', $editEmployee?->status ?? 'actif') === $value)>{{ $label }}</option>
 @endforeach
 </select>
 <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-body-md">expand_more</span>
@@ -1006,7 +1018,6 @@ Non renseignée
 <script>
     (function() {
       const drawer = document.getElementById('add-employee-modal');
-      const openBtn = document.getElementById('open-modal-btn');
       const closeBtn = document.getElementById('close-modal-btn');
       const backBtn = document.getElementById('modal-back-btn');
       const nextBtn = document.getElementById('modal-next-btn');
@@ -1082,14 +1093,6 @@ Non renseignée
         return true;
       }
 
-      function openDrawer() {
-        if (!drawer) return;
-        drawer.classList.remove('hidden');
-        drawer.classList.add('flex');
-        lockScroll(true);
-        setStep(1);
-      }
-
       function closeDrawer() {
         if (!drawer) return;
         if (drawer.dataset.isEditing === '1') {
@@ -1125,7 +1128,6 @@ Non renseignée
         }
       }
 
-      if (openBtn) openBtn.addEventListener('click', openDrawer);
       if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
       if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
