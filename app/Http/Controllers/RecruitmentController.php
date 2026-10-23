@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Candidate;
 use App\Models\Interview;
 use App\Models\JobOffer;
+use App\Mail\CandidateHiredMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class RecruitmentController extends Controller
@@ -75,6 +77,13 @@ class RecruitmentController extends Controller
 
         $candidate->update($validated);
 
+        if ($candidate->wasChanged('stage')) {
+            $candidate->hired_at = $candidate->stage === 'hired' ? now() : null;
+            $candidate->save();
+        }
+
+        $this->notifyHiredCandidate($candidate);
+
         return redirect()->route('admin.recruitment')->with('success', 'Candidat mis à jour.');
     }
 
@@ -95,7 +104,22 @@ class RecruitmentController extends Controller
         $candidate->hired_at = $request->stage === 'hired' ? now() : null;
         $candidate->save();
 
+        $this->notifyHiredCandidate($candidate);
+
         return response()->json(['ok' => true]);
+    }
+
+    private function notifyHiredCandidate(Candidate $candidate): void
+    {
+        if ($candidate->stage !== 'hired' || ! $candidate->wasChanged('stage') || blank($candidate->email)) {
+            return;
+        }
+
+        try {
+            Mail::to($candidate->email)->send(new CandidateHiredMail($candidate));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     public function storeOffer(Request $request)
