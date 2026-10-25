@@ -95,7 +95,11 @@
       "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && grep -n \"function with.*Cookie\\\\|unencryptedCookies\\\\|disableCookieEncryption\" vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php | head -30)",
       "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && cat .env | grep -E \"^\\(APP_ENV|APP_KEY|DB_\\)\" | sed 's/=.*KEY.*/=<redacted>/')",
       "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && sed -n '660,690p' vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php && grep -n \"unencrypted\" vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php | head -20)",
-      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && sed -n '210,265p' vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php)"
+      "Bash(cd \"C:/Users/skonb/Desktop/Nouveau dossier/Human-Resource-Management-Module-Laravel\" && sed -n '210,265p' vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php)",
+      "Bash(php artisan tinker --execute=\"echo \\\\App\\\\Models\\\\User::count\\(\\).' users'; echo PHP_EOL; \\\\App\\\\Models\\\\User::all\\(['id','name','email','role']\\)->each\\(fn\\(\\\\$u\\)=>print\\(\\\\$u->id.' | '.\\\\$u->name.' | '.\\\\$u->email.' | '.\\\\$u->role.PHP_EOL\\)\\);\" 2>&1)",
+      "Bash(grep -rn \"User::\" database/seeders app/Http/Controllers/Auth 2>/dev/null | head -20)",
+      "Bash(grep -n \"verified\\\\|token.auth\\\\|admin\" routes/web.php | head -30)",
+      "Bash(php artisan db:seed --class=AdminSeeder --force 2>&1)"
     ]
   }
 }
